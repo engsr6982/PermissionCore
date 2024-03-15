@@ -1,25 +1,25 @@
 {
     "format_version": 2,
-    "tooth": "change-this",
+    "tooth": "Permission",
     "version": "0.0.0",
     "info": {
-        "name": "change-this",
-        "description": "change-this",
-        "author": "change-this",
+        "name": "Permission",
+        "description": "Permission",
+        "author": "Permission",
         "tags": [
             "levilamina",
             "plugin"
         ]
     },
-    "asset_url": "change-this",
+    "asset_url": "Permission",
     "prerequisites": {
-        "github.com/LiteLDev/LeviLamina": "change-this"
+        "github.com/LiteLDev/LeviLamina": "Permission"
     },
     "files": {
         "place": [
             {
-                "src": "change-this/*",
-                "dest": "plugins/change-this/"
+                "src": "Permission/*",
+                "dest": "plugins/Permission/"
             }
         ]
     }
