@@ -13,7 +13,11 @@ end
 
 target("Permission") -- Change this to your plugin name.
     add_cxflags("/EHa", "/utf-8")
-    add_defines("NOMINMAX", "UNICODE")
+    add_defines(
+        "NOMINMAX", 
+        "UNICODE",
+        "PERMISSION_CORE_API_EXPORT" -- export dll api
+    )
     add_files("src/**.cpp")
     add_includedirs("src")
     add_packages("levilamina")
