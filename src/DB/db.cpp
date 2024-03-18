@@ -1,11 +1,11 @@
 #include "db/db.h"
 #include "entry/Entry.h"
+#include "permission/struct.h"
 #include <ll/api/data/KeyValueDB.h>
 #include <memory>
 #include <nlohmann/json.hpp>
 #include <nlohmann/json_fwd.hpp>
 #include <optional>
-#include <string_view>
 
 
 namespace pcore::db {
@@ -30,11 +30,11 @@ bool loadLevelDB() {
 using string = std::string;
 using json   = nlohmann::json;
 
-PermData from_json(const json& j) {
-    PermData permData;
+perm::structs::PluginPermData from_json(const json& j) {
+    perm::structs::PluginPermData permData;
     permData.admin = j["admin"].get<std::vector<std::string>>();
     for (const auto& userGroup : j["user"]) {
-        UserGroup group;
+        perm::structs::UserGroup group;
         group.groupName = userGroup["groupName"];
         group.authority = userGroup["authority"].get<std::vector<std::string>>();
         group.user      = userGroup["user"].get<std::vector<std::string>>();
@@ -44,7 +44,7 @@ PermData from_json(const json& j) {
     return permData;
 }
 
-json to_json(const PermData& permData) {
+json to_json(const perm::structs::PluginPermData& permData) {
     json data;
     data["admin"] = permData.admin;
     for (const auto& group : permData.user) {
@@ -58,7 +58,7 @@ json to_json(const PermData& permData) {
     return data;
 }
 
-std::optional<PermData> getPluginData(string pluginName) {
+std::optional<perm::structs::PluginPermData> getPluginData(string pluginName) {
     auto& logger = entry::entry::getInstance().getSelf().getLogger();
     try {
         auto d = mKVDB->get(pluginName);
@@ -73,7 +73,7 @@ std::optional<PermData> getPluginData(string pluginName) {
     }
 }
 
-bool setPluginData(string pluginName, PermData& data) {
+bool setPluginData(string pluginName, perm::structs::PluginPermData& data) {
     auto& logger = entry::entry::getInstance().getSelf().getLogger();
     try {
         auto j   = to_json(data);
@@ -99,6 +99,11 @@ bool initPluginData(string pluginName) {
         logger.error("Failed to initialize plugin {} data", pluginName);
         return false;
     }
+}
+
+bool isPluginInit(string pluginName) {
+    auto d = mKVDB->get(pluginName);
+    return d->empty();
 }
 
 } // namespace pcore::db
