@@ -32,7 +32,7 @@ bool PermissionCore::loadPermDataFromDB() {
     return false;
 }
 
-bool PermissionCore::setPermDataToDB() { pcore::db::setPluginData(pluginName, *data); }
+bool PermissionCore::setPermDataToDB() { return pcore::db::setPluginData(pluginName, *data); }
 
 PermissionCore::PermissionCore(string pluginName, bool enablePublicGroups) {
     pluginName         = pluginName;
@@ -276,15 +276,11 @@ bool PermissionCore::checkUserPermission(
 
 //! 权限注册接口  ===========================================================================
 
-// /**
-//  * 检查权限是否合法 (6~12个字符，允许数字，字母)
-//  * @param authority 权限
-//  * @returns 是否合法
-//  */
-// bool PermissionCore::validatePermission(const string& authority) {
-//     std::regex pattern("^[a-zA-Z0-9]{6,12}$");
-//     return std::regex_match(authority, pattern);
-// }
+// 检查权限是否合法 (6~12个字符，允许数字，字母)
+bool PermissionCore::validatePermission(const string& authority) {
+    std::regex pattern("^[a-zA-Z0-9]{6,12}$");
+    return std::regex_match(authority, pattern);
+}
 
 // /**
 //  * 获取所有已注册的权限

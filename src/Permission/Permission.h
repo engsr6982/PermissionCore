@@ -69,11 +69,11 @@ public:
 
     //! reg
     bool                          validatePermission(const std::string& authority);
-    nlohmann::json                retrieveAllPermissions();
-    std::optional<nlohmann::json> retrievePermission(const std::string& value);
-    bool                          checkPermissionRegistration(const std::string& authority);
-    bool                          registerPermission(const std::string& name, const std::string& authority);
-    bool                          unregisterPermission(const std::string& authority);
+    // nlohmann::json                retrieveAllPermissions();
+    // std::optional<nlohmann::json> retrievePermission(const std::string& value);
+    // bool                          checkPermissionRegistration(const std::string& authority);
+    // bool                          registerPermission(const std::string& name, const std::string& authority);
+    // bool                          unregisterPermission(const std::string& authority);
 
 private:
     std::unique_ptr<perm::structs::PluginPermData> data;
