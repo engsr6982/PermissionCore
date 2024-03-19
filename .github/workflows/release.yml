@@ -2,7 +2,7 @@ on:
   release:
     types:
       - published
-  
+
 jobs:
   build:
     runs-on: windows-latest
@@ -33,6 +33,30 @@ jobs:
           name: ${{ github.event.repository.name }}-windows-x64-${{ github.sha }}
           path: |
             bin/
+
+  prepare-sdk:
+    needs: build
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Create SDK directories
+        run: |
+          mkdir SDK
+          mkdir SDK/Lib
+
+      - name: Copy include files to SDK
+        run: |
+          cp -r include/* SDK/
+
+      - name: Copy .lib files to SDK/Lib
+        run: |
+          cp -r build/windows/x64/release/*.lib SDK/Lib/
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: SDK-${{ github.sha }}
+          path: SDK
 
   update-release-notes:
     permissions:
@@ -75,3 +99,25 @@ jobs:
         with:
           files: |
             ${{ github.event.repository.name }}-windows-x64.zip
+
+  upload-sdk-to-release:
+    needs:
+      - prepare-sdk
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: SDK-${{ github.sha }}
+          path: sdk-artifact
+
+      - run: |
+          zip -r ../SDK-${{ github.sha }}.zip sdk-artifact/*
+
+      - uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            SDK-${{ github.sha }}.zip
