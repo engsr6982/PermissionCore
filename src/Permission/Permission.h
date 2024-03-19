@@ -24,8 +24,6 @@ public:
     bool removeAdmin(const std::string& userid);
 
     //! user
-    bool validateName(const std::string& name);
-
     bool hasUserGroup(const std::string& name);
 
     const std::optional<perm::structs::GetUserGroupStruct> getUserGroup(const string& name);
@@ -67,13 +65,9 @@ public:
     bool
     checkUserPermission(const string& userid, const string& authority, const bool publicGroup, const bool adminGroup);
 
-    //! reg
-    bool validatePermission(const std::string& authority);
-    // nlohmann::json                retrieveAllPermissions();
-    // std::optional<nlohmann::json> retrievePermission(const std::string& value);
-    // bool                          checkPermissionRegistration(const std::string& authority);
-    // bool                          registerPermission(const std::string& name, const std::string& authority);
-    // bool                          unregisterPermission(const std::string& authority);
+    //! tools
+    static bool validatePermission(const std::string& authority);
+    static bool validateName(const std::string& name);
 
 private:
     std::unique_ptr<perm::structs::PluginPermData> data;

@@ -66,12 +66,6 @@ bool PermissionCore::removeAdmin(const string& userid) {
 }
 
 //! 用户组接口 ===========================================================================
-// 检查名称是否合法 (允许1-16字节，允许中文字母，数字，下划线)
-bool PermissionCore::validateName(const string& name) {
-    std::regex pattern("^[a-zA-Z0-9_\u4e00-\u9fa5]{1,16}$");
-    return std::regex_match(name, pattern);
-}
-
 // 检查组是否存在
 bool PermissionCore::hasUserGroup(const string& name) {
     auto& userGroup = data->user;
@@ -274,80 +268,17 @@ bool PermissionCore::checkUserPermission(
                                              : false;
 }
 
-//! 权限注册接口  ===========================================================================
+//! 辅助函数  ===========================================================================
 
 // 检查权限是否合法 (6~12个字符，允许数字，字母)
 bool PermissionCore::validatePermission(const string& authority) {
     std::regex pattern("^[a-zA-Z0-9]{6,12}$");
     return std::regex_match(authority, pattern);
 }
-
-// /**
-//  * 获取所有已注册的权限
-//  * @returns 权限列表
-//  */
-// json PermissionCore::retrieveAllPermissions() { return this->registeredPermissions; }
-
-// /**
-//  * 获取权限
-//  * @param value 权限值
-//  * @returns 权限对象
-//  */
-// std::optional<json> PermissionCore::retrievePermission(const string& value) {
-//     auto it = std::find_if(
-//         this->registeredPermissions.begin(),
-//         this->registeredPermissions.end(),
-//         [&value](const json& item) { return item["value"] == value; }
-//     );
-//     if (it != this->registeredPermissions.end()) {
-//         return *it;
-//     }
-//     return std::nullopt;
-// }
-
-// /**
-//  * 检查权限是否已注册
-//  * @param authority 权限
-//  * @returns 注册状态
-//  */
-// bool PermissionCore::checkPermissionRegistration(const string& authority) {
-//     return std::any_of(
-//         this->registeredPermissions.begin(),
-//         this->registeredPermissions.end(),
-//         [&authority](const json& item) { return item["value"] == authority; }
-//     );
-// }
-
-// /**
-//  * 注册权限
-//  * @param name 权限名称
-//  * @param authority 权限值
-//  * @returns 成功状态
-//  */
-// bool PermissionCore::registerPermission(const string& name, const string& authority) {
-//     if (!validatePermission(authority)) return false;         // 权限值无效
-//     if (checkPermissionRegistration(authority)) return false; // 权限值已注册
-//     this->registeredPermissions.push_back({
-//         {"name",  name     },
-//         {"value", authority},
-//     });
-//     return true;
-// }
-
-// /**
-//  * 注销权限
-//  * @param authority 权限
-//  * @returns 成功状态
-//  */
-// bool PermissionCore::unregisterPermission(const string& authority) {
-//     if (!checkPermissionRegistration(authority)) return false;
-//     auto it = std::remove_if(
-//         this->registeredPermissions.begin(),
-//         this->registeredPermissions.end(),
-//         [&authority](const json& item) { return item["value"] == authority; }
-//     );
-//     this->registeredPermissions.erase(it, this->registeredPermissions.end());
-//     return true;
-// }
+// 检查名称是否合法 (允许1-16字节，允许中文字母，数字，下划线)
+bool PermissionCore::validateName(const string& name) {
+    std::regex pattern("^[a-zA-Z0-9_\u4e00-\u9fa5]{1,16}$");
+    return std::regex_match(name, pattern);
+}
 
 } // namespace perm
