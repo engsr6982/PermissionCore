@@ -1,5 +1,5 @@
-#include "permission/Permission.h"
 #include "db/db.h"
+#include "include_all.h"
 #include <exception>
 #include <fstream>
 #include <iostream>
@@ -10,6 +10,7 @@
 #include <stdexcept>
 #include <string>
 #include <vector>
+
 
 namespace perm {
 
@@ -26,7 +27,7 @@ bool PermissionCore::loadPermDataFromDB() {
     }
     auto d = perm::db::getPluginData(pluginName);
     if (d) {
-        data = std::unique_ptr<perm::structs::PluginPermData>(new perm::structs::PluginPermData(*d));
+        data = std::unique_ptr<PluginPermData>(new PluginPermData(*d));
         return true;
     }
     return false;
@@ -76,24 +77,24 @@ bool PermissionCore::hasUserGroup(const string& name) {
 }
 
 // 获取组
-const std::optional<perm::structs::GetUserGroupStruct> PermissionCore::getUserGroup(const string& name) {
+const std::optional<GetUserGroupStruct> PermissionCore::getUserGroup(const string& name) {
     auto& userGroup = data->user;
     for (size_t i = 0; i < userGroup.size(); ++i) {
         if (userGroup[i].groupName == name) {
             // 使用构造函数创建a的实例
-            return perm::structs::GetUserGroupStruct(i, userGroup[i]);
+            return GetUserGroupStruct(i, userGroup[i]);
         }
     }
     return std::nullopt;
 }
 
 // 获取所有组
-const std::vector<perm::structs::UserGroup>& PermissionCore::getAllUserGroups() { return data->user; }
+const std::vector<UserGroup>& PermissionCore::getAllUserGroups() { return data->user; }
 
 // 创建组
 bool PermissionCore::createUserGroup(const string& name) {
     if (hasUserGroup(name) || !validateName(name)) return false;
-    perm::structs::UserGroup gp;
+    UserGroup gp;
     gp.groupName = name;
     gp.user      = std::vector<string>();
     gp.authority = std::vector<string>();
@@ -182,8 +183,8 @@ bool PermissionCore::removeUserToUserGroup(const string& name, const string& use
 }
 
 // 获取用户所在的组
-const std::vector<perm::structs::UserGroup> PermissionCore::getUserGroupsOfUser(const string& userid) {
-    std::vector<perm::structs::UserGroup> us;
+const std::vector<UserGroup> PermissionCore::getUserGroupsOfUser(const string& userid) {
+    std::vector<UserGroup> us;
 
     auto& userGroup = data->user;
     for (const auto& group : userGroup) {
@@ -198,9 +199,8 @@ const std::vector<perm::structs::UserGroup> PermissionCore::getUserGroupsOfUser(
 }
 
 // 获取用户权限
-const std::optional<perm::structs::GetUserPermissionsStruct>
-PermissionCore::getUserPermissionOfUserData(const string& userid) {
-    perm::structs::GetUserPermissionsStruct data;
+const std::optional<GetUserPermissionsStruct> PermissionCore::getUserPermissionOfUserData(const string& userid) {
+    GetUserPermissionsStruct data;
 
     auto groups = getUserGroupsOfUser(userid);
     for (const auto& group : groups) {

@@ -19,7 +19,7 @@ target("Permission") -- Change this to your plugin name.
         "PERMISSION_CORE_API_EXPORT" -- export dll api
     )
     add_files("src/**.cpp")
-    add_includedirs("src")
+    add_includedirs("src", "include")
     add_packages("levilamina")
     add_shflags("/DELAYLOAD:bedrock_server.dll") -- To use symbols provided by SymbolProvider.
     set_exceptions("none") -- To avoid conflicts with /EHa.

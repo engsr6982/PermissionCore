@@ -1,6 +1,6 @@
 #include "db/db.h"
 #include "entry/Entry.h"
-#include "permission/struct.h"
+#include "include_all.h"
 #include <ll/api/data/KeyValueDB.h>
 #include <memory>
 #include <nlohmann/json.hpp>
@@ -30,11 +30,11 @@ bool loadLevelDB() {
 using string = std::string;
 using json   = nlohmann::json;
 
-perm::structs::PluginPermData from_json(const json& j) {
-    perm::structs::PluginPermData permData;
+PluginPermData from_json(const json& j) {
+    PluginPermData permData;
     permData.admin = j["admin"].get<std::vector<std::string>>();
     for (const auto& userGroup : j["user"]) {
-        perm::structs::UserGroup group;
+        UserGroup group;
         group.groupName = userGroup["groupName"];
         group.authority = userGroup["authority"].get<std::vector<std::string>>();
         group.user      = userGroup["user"].get<std::vector<std::string>>();
@@ -44,7 +44,7 @@ perm::structs::PluginPermData from_json(const json& j) {
     return permData;
 }
 
-json to_json(const perm::structs::PluginPermData& permData) {
+json to_json(const PluginPermData& permData) {
     json data;
     data["admin"] = permData.admin;
     for (const auto& group : permData.user) {
@@ -58,7 +58,7 @@ json to_json(const perm::structs::PluginPermData& permData) {
     return data;
 }
 
-std::optional<perm::structs::PluginPermData> getPluginData(string pluginName) {
+std::optional<PluginPermData> getPluginData(string pluginName) {
     auto& logger = entry::entry::getInstance().getSelf().getLogger();
     try {
         auto d = mKVDB->get(pluginName);
@@ -73,7 +73,7 @@ std::optional<perm::structs::PluginPermData> getPluginData(string pluginName) {
     }
 }
 
-bool setPluginData(string pluginName, perm::structs::PluginPermData& data) {
+bool setPluginData(string pluginName, PluginPermData& data) {
     auto& logger = entry::entry::getInstance().getSelf().getLogger();
     try {
         auto j   = to_json(data);

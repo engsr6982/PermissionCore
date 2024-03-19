@@ -1,14 +1,37 @@
-#include "db/db.h"
+#pragma once
+
 #include "entry/Macros.h"
-#include "permission/struct.h"
 #include <memory>
+#include <optional>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 
 namespace perm {
 
 using string = std::string;
+
+struct PERMISSION_CORE_API UserGroup {
+    std::string              groupName;
+    std::vector<std::string> authority;
+    std::vector<std::string> user;
+};
+struct PERMISSION_CORE_API PluginPermData {
+    std::vector<std::string> admin;
+    std::vector<UserGroup>   user;
+    std::vector<std::string> publicAuthority;
+};
+struct PERMISSION_CORE_API GetUserGroupStruct {
+    const int       index;
+    const UserGroup data;
+
+    GetUserGroupStruct(int idx, const UserGroup& grp) : index(idx), data(grp) {}
+};
+struct PERMISSION_CORE_API GetUserPermissionsStruct {
+    std::unordered_map<string, std::vector<string>> source;
+    std::vector<string>                             authority;
+};
 
 class PERMISSION_CORE_API PermissionCore {
 public:
@@ -26,9 +49,9 @@ public:
     //! user
     bool hasUserGroup(const std::string& name);
 
-    const std::optional<perm::structs::GetUserGroupStruct> getUserGroup(const string& name);
+    const std::optional<GetUserGroupStruct> getUserGroup(const string& name);
 
-    const std::vector<perm::structs::UserGroup>& getAllUserGroups();
+    const std::vector<UserGroup>& getAllUserGroups();
 
     bool createUserGroup(const std::string& name);
 
@@ -48,9 +71,9 @@ public:
 
     bool removeUserToUserGroup(const std::string& name, const std::string& userid);
 
-    const std::vector<perm::structs::UserGroup> getUserGroupsOfUser(const string& userid);
+    const std::vector<UserGroup> getUserGroupsOfUser(const string& userid);
 
-    const std::optional<perm::structs::GetUserPermissionsStruct> getUserPermissionOfUserData(const string& userid);
+    const std::optional<GetUserPermissionsStruct> getUserPermissionOfUserData(const string& userid);
 
     //! public
     const std::vector<std::string>& getPublicGroupAllPermissions();
@@ -70,7 +93,7 @@ public:
     static bool validateName(const std::string& name);
 
 private:
-    std::unique_ptr<perm::structs::PluginPermData> data;
+    std::unique_ptr<PluginPermData> data;
 
     bool   enablePublicGroups;
     string pluginName;

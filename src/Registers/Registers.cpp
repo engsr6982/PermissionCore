@@ -1,5 +1,4 @@
-#include "register/register.h"
-#include "permission/Permission.h"
+#include "include_all.h"
 #include <algorithm>
 
 
