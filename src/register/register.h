@@ -9,7 +9,7 @@ namespace perm::registers {
 
 using string = std::string;
 
-struct Authority {
+struct PERMISSION_CORE_API Authority {
     string permissionName;
     string permissionValue;
 };
