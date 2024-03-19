@@ -86,36 +86,31 @@ jobs:
           name: ${{ github.event.repository.name }}-windows-x64-${{ github.sha }}
           path: artifact
 
-      - run: |
-          cp CHANGELOG.md LICENSE README.md artifact/
-
-      - run: |
-          zip -r ../${{ github.event.repository.name }}-windows-x64.zip *
-        working-directory: artifact
-
-      - uses: softprops/action-gh-release@v1
-        with:
-          files: |
-            ${{ github.event.repository.name }}-windows-x64.zip
-
-  upload-sdk-to-release:
-    needs:
-      - prepare-sdk
-    permissions:
-      contents: write
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
       - uses: actions/download-artifact@v4
         with:
           name: SDK-${{ github.sha }}
           path: sdk-artifact
 
       - run: |
+          cp CHANGELOG.md LICENSE README.md artifact/
+        shell: bash
+
+      - run: |
+          cp -r sdk-artifact/* artifact/
+        shell: bash
+
+      - run: |
+          zip -r ../${{ github.event.repository.name }}-windows-x64.zip *
+        working-directory: artifact
+        shell: bash
+
+      - run: |
           zip -r ../SDK-${{ github.sha }}.zip sdk-artifact/*
+        working-directory: sdk-artifact
+        shell: bash
 
       - uses: softprops/action-gh-release@v1
         with:
           files: |
+            ${{ github.event.repository.name }}-windows-x64.zip
             SDK-${{ github.sha }}.zip
