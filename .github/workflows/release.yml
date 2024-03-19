@@ -34,12 +34,7 @@ jobs:
           path: |
             bin/
 
-  prepare-sdk:
-    needs: build
-    runs-on: windows-latest
-    steps:
-      - uses: actions/checkout@v4
-
+      # SDK相关任务
       - name: Create SDK directories
         run: |
           mkdir SDK

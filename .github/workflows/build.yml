@@ -34,30 +34,7 @@ jobs:
           path: |
             bin/
 
-  clang-format:
-    runs-on: windows-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - run: |
-          choco install llvm -y --version=17.0.6
-
-      - name: clang-format
-        run: |
-          Get-ChildItem src/ -Filter *.cpp -Recurse | ForEach-Object { clang-format --dry-run -Werror $_.FullName; if ($LASTEXITCODE -ne 0) { exit 1; } }
-          Get-ChildItem src/ -Filter *.h -Recurse | ForEach-Object { clang-format --dry-run -Werror $_.FullName; if ($LASTEXITCODE -ne 0) { exit 1; } }
-
-  prepare-sdk:
-    needs: build
-    runs-on: windows-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Debug List Tree
-        run: |
-          tree
-        shell: pwsh
-
+      # SDK相关任务
       - name: Create SDK directories
         run: |
           mkdir SDK
@@ -74,12 +51,20 @@ jobs:
           Copy-Item -Path build/windows/x64/release/*.lib -Destination SDK/Lib/ -Force
         shell: pwsh
 
-      - name: Debug List Tree
-        run: |
-          tree
-        shell: pwsh
-
       - uses: actions/upload-artifact@v4
         with:
           name: SDK-${{ github.sha }}
           path: SDK
+
+  clang-format:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - run: |
+          choco install llvm -y --version=17.0.6
+
+      - name: clang-format
+        run: |
+          Get-ChildItem src/ -Filter *.cpp -Recurse | ForEach-Object { clang-format --dry-run -Werror $_.FullName; if ($LASTEXITCODE -ne 0) { exit 1; } }
+          Get-ChildItem src/ -Filter *.h -Recurse | ForEach-Object { clang-format --dry-run -Werror $_.FullName; if ($LASTEXITCODE -ne 0) { exit 1; } }
