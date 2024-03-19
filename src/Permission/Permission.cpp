@@ -21,10 +21,10 @@ bool PermissionCore::loadPermDataFromDB() {
     if (data) {
         return true;
     }
-    if (!pcore::db::isPluginInit(pluginName)) {
-        pcore::db::initPluginData(pluginName);
+    if (!perm::db::isPluginInit(pluginName)) {
+        perm::db::initPluginData(pluginName);
     }
-    auto d = pcore::db::getPluginData(pluginName);
+    auto d = perm::db::getPluginData(pluginName);
     if (d) {
         data = std::unique_ptr<perm::structs::PluginPermData>(new perm::structs::PluginPermData(*d));
         return true;
@@ -32,7 +32,7 @@ bool PermissionCore::loadPermDataFromDB() {
     return false;
 }
 
-bool PermissionCore::setPermDataToDB() { return pcore::db::setPluginData(pluginName, *data); }
+bool PermissionCore::setPermDataToDB() { return perm::db::setPluginData(pluginName, *data); }
 
 PermissionCore::PermissionCore(string pluginName, bool enablePublicGroups) {
     pluginName         = pluginName;

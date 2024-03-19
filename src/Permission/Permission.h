@@ -68,7 +68,7 @@ public:
     checkUserPermission(const string& userid, const string& authority, const bool publicGroup, const bool adminGroup);
 
     //! reg
-    bool                          validatePermission(const std::string& authority);
+    bool validatePermission(const std::string& authority);
     // nlohmann::json                retrieveAllPermissions();
     // std::optional<nlohmann::json> retrievePermission(const std::string& value);
     // bool                          checkPermissionRegistration(const std::string& authority);

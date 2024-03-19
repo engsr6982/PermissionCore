@@ -5,7 +5,7 @@
 #include <optional>
 
 
-namespace pcore::db {
+namespace perm::db {
 
 using string = std::string;
 using json   = nlohmann::json;
@@ -23,4 +23,4 @@ bool                                         setPluginData(string pluginName, pe
 bool                                         initPluginData(string pluginName);
 bool                                         isPluginInit(string pluginName);
 
-} // namespace pcore::db
+} // namespace perm::db

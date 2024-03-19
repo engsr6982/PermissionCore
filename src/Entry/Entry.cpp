@@ -34,7 +34,7 @@ bool entry::load(ll::plugin::NativePlugin& self) {
     getSelf().getLogger().info("loading...");
 
     // Code for loading the plugin goes here.
-    pcore::db::loadLevelDB();
+    perm::db::loadLevelDB();
 
     return true;
 }
@@ -52,7 +52,7 @@ bool entry::disable() {
 
     // Code for disabling the plugin goes here.
 
-    return true;
+    return false;
 }
 
 } // namespace entry

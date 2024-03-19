@@ -8,7 +8,7 @@
 #include <optional>
 
 
-namespace pcore::db {
+namespace perm::db {
 
 std::unique_ptr<ll::data::KeyValueDB>  mKVDB;
 std::unique_ptr<ll::data::KeyValueDB>& getInstance() { return mKVDB; }
@@ -106,4 +106,4 @@ bool isPluginInit(string pluginName) {
     return d->empty();
 }
 
-} // namespace pcore::db
+} // namespace perm::db
