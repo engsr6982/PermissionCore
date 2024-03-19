@@ -11,7 +11,7 @@ if not has_config("vs_runtime") then
     set_runtimes("MD")
 end
 
-target("Permission") -- Change this to your plugin name.
+target("PermissionCore") -- Change this to your plugin name.
     add_cxflags("/EHa", "/utf-8")
     add_defines(
         "NOMINMAX", 

@@ -47,11 +47,14 @@ jobs:
 
       - name: Copy include files to SDK
         run: |
-          cp -r include/* SDK/
+          Copy-Item -Path include/* -Destination SDK/ -Recurse -Force
+        shell: pwsh
 
       - name: Copy .lib files to SDK/Lib
         run: |
-          cp -r build/windows/x64/release/*.lib SDK/Lib/
+          New-Item -Path SDK/Lib -ItemType Directory -Force
+          Copy-Item -Path build/windows/x64/release/*.lib -Destination SDK/Lib/ -Force
+        shell: pwsh
 
       - uses: actions/upload-artifact@v4
         with:
