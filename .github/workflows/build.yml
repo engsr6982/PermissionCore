@@ -39,6 +39,7 @@ jobs:
         run: |
           mkdir SDK
           mkdir SDK/lib
+          mkdir SDK/include
 
       - name: Copy include files to SDK
         run: |
