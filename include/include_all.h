@@ -1,3 +1,3 @@
-#include "PermissionCore/PermissionCore/PermissionCore.h"
-#include "PermissionCore/PermissionCore/PermissionManager.h"
-#include "PermissionCore/Registers/Registers.h"
+#include "PermissionCore/PermissionCore.h"
+#include "PermissionCore/PermissionManager.h"
+#include "Registers/Registers.h"

@@ -1,4 +1,4 @@
-#include "PermissionCore/PermissionCore/PermissionManager.h"
+#include "PermissionCore/PermissionManager.h"
 
 namespace perm {
 

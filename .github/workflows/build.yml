@@ -38,17 +38,17 @@ jobs:
       - name: Create SDK directories
         run: |
           mkdir SDK
-          mkdir SDK/Lib
+          mkdir SDK/lib
 
       - name: Copy include files to SDK
         run: |
-          Copy-Item -Path include/* -Destination SDK/ -Recurse -Force
+          Copy-Item -Path include/* -Destination SDK/include/ -Recurse -Force
         shell: pwsh
 
-      - name: Copy .lib files to SDK/Lib
+      - name: Copy .lib files to SDK/lib
         run: |
-          New-Item -Path SDK/Lib -ItemType Directory -Force
-          Copy-Item -Path build/windows/x64/release/*.lib -Destination SDK/Lib/ -Force
+          New-Item -Path SDK/lib -ItemType Directory -Force
+          Copy-Item -Path build/windows/x64/release/*.lib -Destination SDK/lib/ -Force
         shell: pwsh
 
       - uses: actions/upload-artifact@v4
