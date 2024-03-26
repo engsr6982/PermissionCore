@@ -2,10 +2,10 @@
 
 #ifdef PERMISSION_CORE_API_EXPORT
 
-#define PERMISSION_CORE_API __declspec(dllexport)
+#define PermExports __declspec(dllexport)
 
 #else
 
-#define PERMISSION_CORE_API __declspec(dllimport)
+#define PermExports __declspec(dllimport)
 
 #endif

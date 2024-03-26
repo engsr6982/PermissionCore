@@ -12,28 +12,28 @@ namespace perm {
 
 using string = std::string;
 
-struct PERMISSION_CORE_API UserGroup {
+struct PermExports UserGroup {
     std::string              groupName;
     std::vector<std::string> authority;
     std::vector<std::string> user;
 };
-struct PERMISSION_CORE_API PluginPermData {
+struct PermExports PluginPermData {
     std::vector<std::string> admin;
     std::vector<UserGroup>   user;
     std::vector<std::string> publicAuthority;
 };
-struct PERMISSION_CORE_API GetUserGroupStruct {
+struct PermExports GetUserGroupStruct {
     const int       index;
     const UserGroup data;
 
     GetUserGroupStruct(int idx, const UserGroup& grp) : index(idx), data(grp) {}
 };
-struct PERMISSION_CORE_API GetUserPermissionsStruct {
+struct PermExports GetUserPermissionsStruct {
     std::unordered_map<string, std::vector<string>> source;
     std::vector<string>                             authority;
 };
 
-class PERMISSION_CORE_API PermissionCore {
+class PermExports PermissionCore {
 public:
     PermissionCore(string pluginName, bool enablePublicGroups);
 
