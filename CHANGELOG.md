@@ -7,6 +7,17 @@
 
 ## [Unreleased]
 
+## [0.2.0] - 2024-03-27
+
+### Added
+
+- 添加`PermissionManager`
+
+### Changed
+
+- 更改宏 "PERMISSION_CORE_API" 为 "PermExports"  
+- 更改SDK文件结构
+
 ## [0.1.0] - 2024-03-20
 
 ### Added
