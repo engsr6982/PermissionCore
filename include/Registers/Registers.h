@@ -15,7 +15,7 @@ struct PermExports Authority {
     string permissionValue;
 };
 
-extern std::unordered_map<string, std::vector<Authority>> registerPerm;
+// extern std::unordered_map<string, std::vector<Authority>> registerPerm;
 
 PermExports const std::vector<Authority>& getPluginAllPermissions(const string& pluginName);
 
