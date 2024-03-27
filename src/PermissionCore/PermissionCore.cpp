@@ -1,5 +1,8 @@
-#include "db/db.h"
-#include "include_all.h"
+#include "PermissionCore/PermissionCore.h"
+#include "DB/db.h"
+#include "PermissionCore/PermissionManager.h"
+#include "PermissionCore/Registers.h"
+#include "entry/Entry.h"
 #include <exception>
 #include <fstream>
 #include <iostream>
@@ -19,49 +22,53 @@ using string = std::string;
 
 // tools
 bool PermissionCore::loadPermDataFromDB() {
-    if (data) {
+    auto& logger = entry::entry::getInstance().getSelf().getLogger();
+    if (mData != nullptr) {
+        logger.warn("Do not repeat the initialization");
         return true;
     }
-    if (!perm::db::isPluginInit(pluginName)) {
-        perm::db::initPluginData(pluginName);
+    if (!perm::db::isPluginInit(mPluginName)) {
+        perm::db::initPluginData(mPluginName);
     }
-    auto d = perm::db::getPluginData(pluginName);
+    auto d = perm::db::getPluginData(mPluginName);
     if (d) {
-        data = std::unique_ptr<PluginPermData>(new PluginPermData(*d));
+        mData = std::unique_ptr<PluginPermData>(new PluginPermData(*d));
+        logger.info("Initialization of plugin {} permission data is successful", mPluginName);
         return true;
     }
+    logger.fatal("Failed to initialize the [{}] permission data of the plugin", mPluginName);
     return false;
 }
 
-bool PermissionCore::setPermDataToDB() { return perm::db::setPluginData(pluginName, *data); }
+bool PermissionCore::setPermDataToDB() { return perm::db::setPluginData(mPluginName, *mData); }
 
 PermissionCore::PermissionCore(string pluginName, bool enablePublicGroups) {
-    pluginName         = pluginName;
-    enablePublicGroups = enablePublicGroups;
+    mPluginName         = pluginName;
+    mEnablePublicGroups = enablePublicGroups;
     loadPermDataFromDB();
 }
 
 // !管理员接口 ===========================================================================
 // 获取所有管理员
-const std::vector<string>& PermissionCore::getAllAdmins() { return data->admin; }
+const std::vector<string>& PermissionCore::getAllAdmins() { return mData->admin; }
 
 // 检查用户是否为管理员
 bool PermissionCore::isAdmin(const string& userid) {
-    auto& admins = data->admin;
+    auto& admins = mData->admin;
     return std::find(admins.begin(), admins.end(), userid) != admins.end();
 }
 
 // 添加管理员
 bool PermissionCore::addAdmin(const string& userid) {
     if (isAdmin(userid)) return false;
-    data->admin.push_back(userid);
+    mData->admin.push_back(userid);
     return setPermDataToDB();
 }
 
 // 移除管理员
 bool PermissionCore::removeAdmin(const string& userid) {
     if (!isAdmin(userid)) return false;
-    auto& adminGroup = data->admin;
+    auto& adminGroup = mData->admin;
     adminGroup.erase(std::remove(adminGroup.begin(), adminGroup.end(), userid), adminGroup.end());
     return setPermDataToDB();
 }
@@ -69,7 +76,7 @@ bool PermissionCore::removeAdmin(const string& userid) {
 //! 用户组接口 ===========================================================================
 // 检查组是否存在
 bool PermissionCore::hasUserGroup(const string& name) {
-    auto& userGroup = data->user;
+    auto& userGroup = mData->user;
     for (const auto& group : userGroup) {
         if (group.groupName == name) return true;
     }
@@ -78,7 +85,7 @@ bool PermissionCore::hasUserGroup(const string& name) {
 
 // 获取组
 const std::optional<GetUserGroupStruct> PermissionCore::getUserGroup(const string& name) {
-    auto& userGroup = data->user;
+    auto& userGroup = mData->user;
     for (size_t i = 0; i < userGroup.size(); ++i) {
         if (userGroup[i].groupName == name) {
             // 使用构造函数创建a的实例
@@ -89,7 +96,7 @@ const std::optional<GetUserGroupStruct> PermissionCore::getUserGroup(const strin
 }
 
 // 获取所有组
-const std::vector<UserGroup>& PermissionCore::getAllUserGroups() { return data->user; }
+const std::vector<UserGroup>& PermissionCore::getAllUserGroups() { return mData->user; }
 
 // 创建组
 bool PermissionCore::createUserGroup(const string& name) {
@@ -98,7 +105,7 @@ bool PermissionCore::createUserGroup(const string& name) {
     gp.groupName = name;
     gp.user      = std::vector<string>();
     gp.authority = std::vector<string>();
-    data->user.push_back(gp);
+    mData->user.push_back(gp);
     return setPermDataToDB();
 }
 
@@ -108,7 +115,7 @@ bool PermissionCore::deleteUserGroup(const string& name) {
     auto group = getUserGroup(name);
     if (!group.has_value()) return false;
     auto index = group->index;
-    data->user.erase(data->user.begin() + index);
+    mData->user.erase(mData->user.begin() + index);
     return setPermDataToDB();
 }
 
@@ -117,8 +124,8 @@ bool PermissionCore::renameUserGroup(const string& name, const string& newGroupN
     if (!hasUserGroup(name) || !validateName(newGroupName)) return false;
     auto group = getUserGroup(name);
     if (!group.has_value()) return false;
-    auto index                  = group->index;
-    data->user[index].groupName = newGroupName;
+    auto index                   = group->index;
+    mData->user[index].groupName = newGroupName;
     return setPermDataToDB();
 }
 
@@ -138,7 +145,7 @@ bool PermissionCore::addPermissionToUserGroup(const string& name, const string& 
     auto group = getUserGroup(name);
     if (!group.has_value()) return false;
     int index = group->index;
-    data->user[index].authority.push_back(authority);
+    mData->user[index].authority.push_back(authority);
     return setPermDataToDB();
 }
 
@@ -147,7 +154,7 @@ bool PermissionCore::removePermissionToUserGroup(const string& name, const strin
     if (!hasUserGroup(name) || !hasUserGroupPermission(name, authority)) return false;
     auto group = getUserGroup(name);
     if (!group.has_value()) return false; // 检查group是否有值
-    auto& authArray = data->user[group->index].authority;
+    auto& authArray = mData->user[group->index].authority;
     authArray.erase(std::remove(authArray.begin(), authArray.end(), authority), authArray.end());
     return setPermDataToDB();
 }
@@ -168,7 +175,7 @@ bool PermissionCore::addUserToUserGroup(const string& name, const string& userid
     auto group = getUserGroup(name);
     if (!group.has_value()) return false;
     auto index = group->index;
-    data->user[index].user.push_back(userid);
+    mData->user[index].user.push_back(userid);
     return setPermDataToDB();
 }
 
@@ -177,7 +184,7 @@ bool PermissionCore::removeUserToUserGroup(const string& name, const string& use
     if (!hasUserGroup(name) || !isUserInUserGroup(name, userid)) return false;
     auto group = getUserGroup(name);
     if (!group.has_value()) return false; // 检查group是否有值
-    auto& userArray = data->user[group->index].user;
+    auto& userArray = mData->user[group->index].user;
     userArray.erase(std::remove(userArray.begin(), userArray.end(), userid), userArray.end());
     return setPermDataToDB();
 }
@@ -186,7 +193,7 @@ bool PermissionCore::removeUserToUserGroup(const string& name, const string& use
 const std::vector<UserGroup> PermissionCore::getUserGroupsOfUser(const string& userid) {
     std::vector<UserGroup> us;
 
-    auto& userGroup = data->user;
+    auto& userGroup = mData->user;
     for (const auto& group : userGroup) {
         for (const auto& user : group.user) {
             if (user == userid) {
@@ -226,11 +233,11 @@ const std::optional<GetUserPermissionsStruct> PermissionCore::getUserPermissionO
 
 //! 公共组接口  ===========================================================================
 // 获取公共组权限
-const std::vector<std::string>& PermissionCore::getPublicGroupAllPermissions() { return data->publicAuthority; }
+const std::vector<std::string>& PermissionCore::getPublicGroupAllPermissions() { return mData->publicAuthority; }
 
 // 检查公共组是否具有特定权限
 bool PermissionCore::hasPublicGroupPermission(const string& authority) {
-    auto& p = data->publicAuthority;
+    auto& p = mData->publicAuthority;
     return std::find(p.begin(), p.end(), authority) != p.end();
 }
 
@@ -238,14 +245,14 @@ bool PermissionCore::hasPublicGroupPermission(const string& authority) {
 bool PermissionCore::addPermissionToPublicGroup(const string& authority) {
     if (!validatePermission(authority)) return false;
     if (hasPublicGroupPermission(authority)) return false;
-    data->publicAuthority.push_back(authority);
+    mData->publicAuthority.push_back(authority);
     return setPermDataToDB();
 }
 
 // 从公共组中移除权限
 bool PermissionCore::removePermissionToPublicGroup(const string& authority) {
     if (!hasPublicGroupPermission(authority)) return false;
-    auto& p = data->publicAuthority;
+    auto& p = mData->publicAuthority;
     p.erase(std::remove(p.begin(), p.end(), authority), p.end());
     return setPermDataToDB();
 }
@@ -263,9 +270,9 @@ bool PermissionCore::checkUserPermission(
     if (std::find(userPermissions.begin(), userPermissions.end(), authority) != userPermissions.end()) {
         return true;
     }
-    return publicGroup && enablePublicGroups ? this->hasPublicGroupPermission(authority)
-         : adminGroup                        ? isAdmin(userid)
-                                             : false;
+    return publicGroup && mEnablePublicGroups ? this->hasPublicGroupPermission(authority)
+         : adminGroup                         ? isAdmin(userid)
+                                              : false;
 }
 
 //! 辅助函数  ===========================================================================

@@ -1,6 +1,8 @@
-#include "db/db.h"
+#include "db.h"
+#include "PermissionCore/PermissionCore.h"
+#include "PermissionCore/PermissionManager.h"
+#include "PermissionCore/Registers.h"
 #include "entry/Entry.h"
-#include "include_all.h"
 #include <ll/api/data/KeyValueDB.h>
 #include <memory>
 #include <nlohmann/json.hpp>
@@ -88,7 +90,13 @@ bool setPluginData(string pluginName, PluginPermData& data) {
 bool initPluginData(string pluginName) {
     auto& logger = entry::entry::getInstance().getSelf().getLogger();
     try {
-        if (!mKVDB->get(pluginName)->empty()) return false; // 避免重复初始化
+        logger.warn("1");
+        auto result = mKVDB->get(pluginName);
+        if (result.has_value() && !result->empty()) {
+            // 如果result有值且不为空字符串，认为已经初始化，避免重复初始化
+            return false;
+        }
+        logger.warn("2");
         json j;
         j["admin"]  = json::array();
         j["user"]   = json::array();
@@ -103,7 +111,10 @@ bool initPluginData(string pluginName) {
 
 bool isPluginInit(string pluginName) {
     auto d = mKVDB->get(pluginName);
-    return d->empty();
+    if (!d) {
+        return false;
+    }
+    return !d->empty();
 }
 
 } // namespace perm::db

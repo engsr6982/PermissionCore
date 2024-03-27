@@ -1,4 +1,6 @@
-#include "include_all.h"
+#include "PermissionCore/Registers.h"
+#include "PermissionCore/PermissionCore.h"
+#include "PermissionCore/PermissionManager.h"
 #include <algorithm>
 
 
@@ -6,14 +8,15 @@ namespace perm::registers {
 
 std::unordered_map<string, std::vector<Authority>> registerPerm;
 
-const std::vector<Authority>& getPluginAllPermissions(const string& pluginName) {
-    if (registerPerm.find(pluginName) != registerPerm.end()) {
-        return registerPerm[pluginName];
+std::vector<Authority> getPluginAllPermissions(const string& pluginName) {
+    auto it = registerPerm.find(pluginName);
+    if (it != registerPerm.end()) {
+        return it->second;
     }
-    return {};
+    return {}; // 返回一个新的空vector实例
 }
 
-const std::optional<Authority>& getPluginPermission(const string& pluginName, const string& permissionValue) {
+std::optional<Authority> getPluginPermission(const string& pluginName, const string& permissionValue) {
     auto it = registerPerm.find(pluginName);
     if (it != registerPerm.end()) {
         auto& permissions = it->second;
@@ -22,10 +25,10 @@ const std::optional<Authority>& getPluginPermission(const string& pluginName, co
                 return authority.permissionValue == permissionValue;
             });
         if (permIt != permissions.end()) {
-            return *permIt;
+            return *permIt; // 直接返回找到的Authority包装在std::optional中
         }
     }
-    return std::nullopt;
+    return std::nullopt; // 当找不到时返回std::nullopt
 }
 
 bool isPermissionRegistration(const string& pluginName, const string& permissionValue) {

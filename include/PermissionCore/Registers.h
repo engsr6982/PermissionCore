@@ -1,5 +1,5 @@
 #pragma once
-#include "entry/Macros.h"
+#include "Macros.h"
 #include <optional>
 #include <string>
 #include <unordered_map>
@@ -17,10 +17,8 @@ struct PermExports Authority {
 
 // extern std::unordered_map<string, std::vector<Authority>> registerPerm;
 
-PermExports const std::vector<Authority>& getPluginAllPermissions(const string& pluginName);
-
-PermExports const std::optional<Authority>&
-                  getPluginPermission(const string& pluginName, const string& permissionValue);
+PermExports std::vector<Authority> getPluginAllPermissions(const string& pluginName);
+PermExports std::optional<Authority> getPluginPermission(const string& pluginName, const string& permissionValue);
 
 PermExports bool isPermissionRegistration(const string& pluginName, const string& permissionValue);
 

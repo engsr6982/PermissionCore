@@ -1,6 +1,6 @@
 #pragma once
 
-#include "entry/Macros.h"
+#include "Macros.h"
 #include <memory>
 #include <optional>
 #include <string>
@@ -93,10 +93,10 @@ public:
     static bool validateName(const std::string& name);
 
 private:
-    std::unique_ptr<PluginPermData> data;
+    std::unique_ptr<PluginPermData> mData;
 
-    bool   enablePublicGroups;
-    string pluginName;
+    bool   mEnablePublicGroups;
+    string mPluginName;
     bool   loadPermDataFromDB();
     bool   setPermDataToDB();
 };
