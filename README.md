@@ -25,6 +25,9 @@
 
 ## How to use?
 
+以下是按照传统的submodule形式使用PermissionCore  
+如果需要xmake来管理PermissionCore，请参考测试仓库的[xmake.lua](https://github.com/engsr6982/PermissionCoreTest/blob/main/xmake.lua)
+
 - Step1:
 
 从`Release`下载`SDK`，解压到你的项目仓库根目录的`SDK_PermissonCore`下
