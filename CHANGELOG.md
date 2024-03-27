@@ -7,6 +7,12 @@
 
 ## [Unreleased]
 
+## [0.2.1] - 2024-03-27
+
+## Removed
+
+- 头文件“Register.h”移除`registerPerm`声明(修复编译)
+
 ## [0.2.0] - 2024-03-27
 
 ### Added
