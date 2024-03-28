@@ -1,3 +1,6 @@
+#pragma once
+
+#include "PermissionCore/Group.h"
 #include "PermissionCore/PermissionCore.h"
 #include "PermissionCore/PermissionManager.h"
 #include "PermissionCore/Registers.h"
@@ -7,22 +10,31 @@
 #include <optional>
 
 
-namespace perm::db {
+namespace perm {
 
 using string = std::string;
 using json   = nlohmann::json;
 
-extern std::unique_ptr<ll::data::KeyValueDB> mKVDB;
-std::unique_ptr<ll::data::KeyValueDB>&       getInstance();
+class db {
+public:
+    static db& getInstance();
 
-bool loadLevelDB();
+    void                                   loadLevelDB();
+    std::unique_ptr<ll::data::KeyValueDB>& getDBInstance();
 
-json           to_json(const PluginPermData& permData);
-PluginPermData from_json(const json& j);
+    bool isPluginInit(string pluginName);
+    bool initPluginData(string pluginName);
 
-std::optional<PluginPermData> getPluginData(string pluginName);
-bool                          setPluginData(string pluginName, PluginPermData& data);
-bool                          initPluginData(string pluginName);
-bool                          isPluginInit(string pluginName);
+    std::optional<std::unordered_map<std::string, group::Group>> getPluginData(string pluginName);
+    bool setPluginData(string pluginName, const std::unordered_map<std::string, group::Group>& data);
 
-} // namespace perm::db
+    // tools
+    static json hashMapToJson(const std::unordered_map<std::string, group::Group>& hashMap);
+    static std::unordered_map<std::string, group::Group> jsonToHashMap(const json& j);
+
+private:
+    db() = default;
+    std::unique_ptr<ll::data::KeyValueDB> mKVDB;
+};
+
+} // namespace perm
