@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Group.h"
 #include "Macros.h"
 #include <memory>
 #include <optional>
@@ -12,90 +13,64 @@ namespace perm {
 
 using string = std::string;
 
-struct PermExports UserGroup {
-    std::string              groupName;
-    std::vector<std::string> authority;
-    std::vector<std::string> user;
-};
-struct PermExports PluginPermData {
-    std::vector<std::string> admin;
-    std::vector<UserGroup>   user;
-    std::vector<std::string> publicAuthority;
-};
-struct PermExports GetUserGroupStruct {
-    const int       index;
-    const UserGroup data;
-
-    GetUserGroupStruct(int idx, const UserGroup& grp) : index(idx), data(grp) {}
-};
-struct PermExports GetUserPermissionsStruct {
+struct PermExports UserPermissionList {
     std::unordered_map<string, std::vector<string>> source;
-    std::vector<string>                             authority;
+    std::vector<int>                                value;
+
+    bool hasPermission(int val) { return std::find(value.begin(), value.end(), val) == value.end(); }
 };
 
 class PermExports PermissionCore {
 public:
     PermissionCore(string pluginName, bool enablePublicGroups);
 
-    //! admin
-    const std::vector<string>& getAllAdmins();
+    bool hasGroup(const string& name);
 
-    bool isAdmin(const std::string& userid);
+    const std::optional<group::Group> getGroup(const string& name);
 
-    bool addAdmin(const std::string& userid);
+    const std::vector<group::Group> getAllGroups();
 
-    bool removeAdmin(const std::string& userid);
+    // TODO:
+    const std::vector<group::Group> getAllGroupWithOpen();
+    const std::vector<group::Group> getAllGroupWithDisabled();
 
-    //! user
-    bool hasUserGroup(const std::string& name);
+    bool createGroup(const string& name, bool canBeDeleted);
 
-    const std::optional<GetUserGroupStruct> getUserGroup(const string& name);
+    bool deleteGroup(const string& name);
 
-    const std::vector<UserGroup>& getAllUserGroups();
+    bool renameGroup(const string& name, const string& newGroupName);
 
-    bool createUserGroup(const std::string& name);
+    bool hasGroupPermission(const string& name, const int& value);
 
-    bool deleteUserGroup(const std::string& name);
+    bool addPermissionToGroup(const string& name, const string& permissionName, const int& value);
 
-    bool renameUserGroup(const std::string& name, const std::string& newGroupName);
+    bool removePermissionToGroup(const string& name, const int& value);
 
-    bool hasUserGroupPermission(const std::string& name, const std::string& authority);
+    bool isUserInGroup(const string& name, const string& identifier);
 
-    bool addPermissionToUserGroup(const std::string& name, const std::string& authority);
+    bool addUserToGroup(const string& name, const string& realName, const string& uuid);
 
-    bool removePermissionToUserGroup(const std::string& name, const std::string& authority);
+    bool removeUserToGroup(const string& name, const string& identifier);
 
-    bool isUserInUserGroup(const std::string& name, const std::string& userid);
+    const std::vector<group::Group> getGroupsOfUser(const string& identifier);
 
-    bool addUserToUserGroup(const std::string& name, const std::string& userid);
-
-    bool removeUserToUserGroup(const std::string& name, const std::string& userid);
-
-    const std::vector<UserGroup> getUserGroupsOfUser(const string& userid);
-
-    const std::optional<GetUserPermissionsStruct> getUserPermissionOfUserData(const string& userid);
-
-    //! public
-    const std::vector<std::string>& getPublicGroupAllPermissions();
-
-    bool hasPublicGroupPermission(const std::string& authority);
-
-    bool addPermissionToPublicGroup(const std::string& authority);
-
-    bool removePermissionToPublicGroup(const std::string& authority);
+    const std::optional<UserPermissionList> getUserPermission(const string& userid);
 
     //! other
-    bool
-    checkUserPermission(const string& userid, const string& authority, const bool publicGroup, const bool adminGroup);
+    bool checkUserPermission(
+        const string& userid,
+        const int&    value,
+        const bool    ignoreGroupStatus    = false,
+        const bool    ignoreIgnoreListType = false
+    );
 
     //! tools
-    static bool validatePermission(const std::string& authority);
-    static bool validateName(const std::string& name);
+    static bool validateName(const string& name);
+    bool        trySyncDataToDB() { return setPermDataToDB(); }
 
 private:
-    std::unique_ptr<PluginPermData> mData;
+    std::unique_ptr<std::unordered_map<string, group::Group>> mData;
 
-    bool   mEnablePublicGroups;
     string mPluginName;
     bool   loadPermDataFromDB();
     bool   setPermDataToDB();

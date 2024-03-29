@@ -15,29 +15,46 @@ namespace perm::group {
 using string = std::string;
 using json   = nlohmann::json;
 
-enum class GroupStatus { Normal, Disabled };
-enum class IgnoreListType { UserList, PermissionList };
+enum class GroupStatus { Disabled, Open };
+enum class IgnoreListType { None, UserList, PermissionList };
 
 struct PermExports User {
     string realName;
     string uuid;
+
+    User(const string& playerName, const string& playerUuid) : realName(playerName), uuid(playerUuid){};
+    bool operator==(const User& other) const { return realName == other.realName && uuid == other.uuid; }
 };
 
 struct PermExports Permission {
     string name;
     int    value;
-    string description; // 可选
+
+    Permission(const string& permissionName, const int& val) : name(permissionName), value(val){};
+    bool operator==(const Permission& other) const { return name == other.name && value == other.value; }
 };
 
 struct PermExports Group {
     string                  groupName;
     std::vector<User>       userList;
     std::vector<Permission> permissionList;
-    bool                    isManagerGroup;
-    bool                    isPublicGroup;
-    bool                    canBeDeleted;
-    GroupStatus             status;
-    IgnoreListType          ignoreListType;
+    GroupStatus             status;         // only api: checkUserPermission use
+    IgnoreListType          ignoreListType; // only api: checkUserPermission use
+
+    Group(const string& name, bool deletable)
+    : groupName(name),
+      status(GroupStatus::Open),
+      ignoreListType(IgnoreListType::None) {
+        userList       = std::vector<User>();
+        permissionList = std::vector<Permission>();
+    }
+    Group(const string& name, GroupStatus grpStatus, IgnoreListType ignoreType)
+    : groupName(name),
+      status(grpStatus),
+      ignoreListType(ignoreType) {
+        userList       = std::vector<User>();
+        permissionList = std::vector<Permission>();
+    }
 
     // 查找用户
     const User* findUser(const string& identifier) const {
@@ -69,26 +86,6 @@ struct PermExports Group {
         return nullptr;
     }
 
-    // 查找用户
-    const Permission* findPermission(const string& identifier) const {
-        for (const auto& perm : permissionList) {
-            if (perm.name == identifier || perm.value == std::stoi(identifier)) {
-                return &perm;
-            }
-        }
-        return nullptr;
-    }
-
-    // 根据权限名查找权限
-    const Permission* findPermissionWithName(const string& name) const {
-        for (const auto& perm : permissionList) {
-            if (perm.name == name) {
-                return &perm;
-            }
-        }
-        return nullptr;
-    }
-
     // 根据权限值查找权限
     const Permission* findPermissionWithValue(int value) const {
         for (const auto& perm : permissionList) {
@@ -100,24 +97,21 @@ struct PermExports Group {
     }
 
     bool hasUser(const string& identifier) const { return findUser(identifier) != nullptr; }
-    bool hasPermission(const string& identifier) const { return findPermission(identifier) != nullptr; }
+    bool hasPermission(const int& value) const { return findPermissionWithValue(value) != nullptr; }
 
     // tools
     static Group fromJSON(const json& j) {
-        Group group;
-        group.groupName      = j["groupName"].get<std::string>();
-        group.isManagerGroup = j["isManagerGroup"].get<bool>();
-        group.isPublicGroup  = j["isPublicGroup"].get<bool>();
-        group.canBeDeleted   = j["canBeDeleted"].get<bool>();
-        group.status         = static_cast<GroupStatus>(j["status"].get<int>());
-        group.ignoreListType = static_cast<IgnoreListType>(j["ignoreListType"].get<int>());
+        string         name       = j["groupName"].get<std::string>();
+        GroupStatus    grpStatus  = static_cast<GroupStatus>(j["status"].get<int>());
+        IgnoreListType ignoreType = static_cast<IgnoreListType>(j["ignoreListType"].get<int>());
+
+        // 使用新的构造函数创建Group对象
+        Group group(name, grpStatus, ignoreType);
 
         // 用户列表
         if (j.contains("userList") && j["userList"].is_array()) {
             for (const auto& userJson : j["userList"]) {
-                User user;
-                user.realName = userJson["realName"].get<std::string>();
-                user.uuid     = userJson["uuid"].get<std::string>();
+                User user(userJson["realName"].get<std::string>(), userJson["uuid"].get<std::string>());
                 group.userList.push_back(user);
             }
         }
@@ -125,12 +119,7 @@ struct PermExports Group {
         // 权限列表
         if (j.contains("permissionList") && j["permissionList"].is_array()) {
             for (const auto& permJson : j["permissionList"]) {
-                Permission perm;
-                perm.name  = permJson["name"].get<std::string>();
-                perm.value = permJson["value"].get<int>();
-                if (permJson.contains("description")) {
-                    perm.description = permJson["description"].get<std::string>();
-                }
+                Permission perm(permJson["name"].get<std::string>(), permJson["value"].get<int>());
                 group.permissionList.push_back(perm);
             }
         }
@@ -141,9 +130,6 @@ struct PermExports Group {
     json toJson() const {
         json jsonGroup;
         jsonGroup["groupName"]      = groupName;
-        jsonGroup["isManagerGroup"] = isManagerGroup;
-        jsonGroup["isPublicGroup"]  = isPublicGroup;
-        jsonGroup["canBeDeleted"]   = canBeDeleted;
         jsonGroup["status"]         = static_cast<int>(status);
         jsonGroup["ignoreListType"] = static_cast<int>(ignoreListType);
 
@@ -161,9 +147,8 @@ struct PermExports Group {
         json permissionListJson = json::array();
         for (const auto& perm : permissionList) {
             json permJson;
-            permJson["name"]        = perm.name;
-            permJson["value"]       = perm.value;
-            permJson["description"] = perm.description; // 可选字段
+            permJson["name"]  = perm.name;
+            permJson["value"] = perm.value;
             permissionListJson.push_back(permJson);
         }
         jsonGroup["permissionList"] = permissionListJson;
