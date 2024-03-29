@@ -24,9 +24,14 @@ std::unordered_map<std::string, group::Group> db::jsonToHashMap(const json& j) {
     std::unordered_map<std::string, group::Group> hashMap;
     for (auto& [key, value] : j.items()) {
         group::Group group = group::Group::fromJSON(value);
-        hashMap[key]       = group;
+        hashMap.emplace(key, std::move(group));
     }
     return hashMap;
+}
+
+db& db::getInstance() {
+    static db instance;
+    return instance;
 }
 
 void db::loadLevelDB() {

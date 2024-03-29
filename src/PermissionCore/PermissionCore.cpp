@@ -93,7 +93,7 @@ const std::vector<group::Group> PermissionCore::getAllGroupWithOpen() {
 bool PermissionCore::createGroup(const string& name, bool canBeDeleted) {
     if (hasGroup(name) || !validateName(name)) return false;
     group::Group gp(name, canBeDeleted);
-    (*mData)[name] = gp;
+    mData->emplace(name, std::move(gp));
     return setPermDataToDB();
 }
 
@@ -107,9 +107,13 @@ bool PermissionCore::deleteGroup(const string& name) {
 // 重命名组
 bool PermissionCore::renameGroup(const string& name, const string& newGroupName) {
     if (!hasGroup(name) || !validateName(newGroupName)) return false;
-    auto group = getGroup(name);
-    if (!group.has_value()) return false;
-    (*mData)[group->groupName].groupName = newGroupName;
+    auto groupIt = mData->find(name);
+    if (groupIt == mData->end()) return false;
+
+    group::Group group = groupIt->second;           // 复制原来的组
+    group.groupName    = newGroupName;              // 修改名称
+    mData->erase(groupIt);                          // 删除旧的键值对
+    mData->emplace(newGroupName, std::move(group)); // 插入新的键值对
     return setPermDataToDB();
 }
 
@@ -123,22 +127,29 @@ bool PermissionCore::hasGroupPermission(const string& name, const int& value) {
 // 向组添加权限
 bool PermissionCore::addPermissionToGroup(const string& name, const string& permissionName, const int& value) {
     if (!hasGroup(name) || hasGroupPermission(name, value)) return false;
-    auto group = getGroup(name);
-    if (!group.has_value()) return false;
+    auto groupIt = mData->find(name);
+    if (groupIt == mData->end()) return false;
+
     group::Permission pr(permissionName, value);
-    (*mData)[group->groupName].permissionList.push_back(pr);
+    groupIt->second.permissionList.push_back(pr);
     return setPermDataToDB();
 }
 
 // 从组中移除权限
 bool PermissionCore::removePermissionToGroup(const string& name, const int& value) {
     if (!hasGroup(name) || !hasGroupPermission(name, value)) return false;
-    auto group = getGroup(name);
-    if (!group.has_value()) return false;
-    auto  pm        = const_cast<group::Permission&>(*group->findPermissionWithValue(value));
-    auto& authArray = (*mData)[group->groupName].permissionList;
-    authArray.erase(std::remove(authArray.begin(), authArray.end(), pm), authArray.end());
-    return setPermDataToDB();
+    auto groupOpt = getGroup(name);
+    if (!groupOpt.has_value()) return false;
+    auto& group = *groupOpt;
+    auto  permIt =
+        std::find_if(group.permissionList.begin(), group.permissionList.end(), [value](const group::Permission& perm) {
+            return perm.value == value;
+        });
+    if (permIt != group.permissionList.end()) {
+        group.permissionList.erase(permIt);
+        return setPermDataToDB();
+    }
+    return false;
 }
 
 // 检查组是否有指定用户
@@ -151,22 +162,27 @@ bool PermissionCore::isUserInGroup(const string& name, const string& identifier)
 // 将用户添加到组
 bool PermissionCore::addUserToGroup(const string& name, const string& realName, const string& uuid) {
     if (!hasGroup(name) || isUserInGroup(name, realName)) return false;
-    auto group = getGroup(name);
-    if (!group.has_value()) return false;
+    auto groupOpt = getGroup(name);
+    if (!groupOpt.has_value()) return false;
     group::User us(realName, uuid);
-    (*mData)[group->groupName].userList.push_back(us);
+    groupOpt->userList.push_back(us);
     return setPermDataToDB();
 }
 
 // 从组中移除用户
 bool PermissionCore::removeUserToGroup(const string& name, const string& identifier) {
     if (!hasGroup(name) || !isUserInGroup(name, identifier)) return false;
-    auto group = getGroup(name);
-    if (!group.has_value()) return false;
-    auto  us        = const_cast<group::User&>(*group->findUser(identifier));
-    auto& userArray = (*mData)[group->groupName].userList;
-    userArray.erase(std::remove(userArray.begin(), userArray.end(), us), userArray.end());
-    return setPermDataToDB();
+    auto groupOpt = getGroup(name);
+    if (!groupOpt.has_value()) return false;
+    auto& group  = *groupOpt;
+    auto  userIt = std::find_if(group.userList.begin(), group.userList.end(), [identifier](const group::User& user) {
+        return user.realName == identifier;
+    });
+    if (userIt != group.userList.end()) {
+        group.userList.erase(userIt);
+        return setPermDataToDB();
+    }
+    return false;
 }
 
 // 获取用户所在的组
