@@ -38,6 +38,11 @@ bool PermissionManager::unregisterPermissionCore(const std::string& pluginName) 
     return false;
 }
 
+bool PermissionManager::hasRegisterPermissionCore(const std::string& pluginName) {
+    return permissionCores.find(pluginName) != permissionCores.end();
+}
+
+
 void initPluginWithPermissionCore(const std::string& pluginName, bool enablePublicGroups) {
     auto permCore = std::make_shared<PermissionCore>(pluginName, enablePublicGroups);
 
