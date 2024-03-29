@@ -45,7 +45,7 @@ bool PermissionCore::loadPermDataFromDB() {
 
 bool PermissionCore::setPermDataToDB() { return perm::db::getInstance().setPluginData(mPluginName, *mData); }
 
-PermissionCore::PermissionCore(string pluginName, bool enablePublicGroups) {
+PermissionCore::PermissionCore(string pluginName) {
     mPluginName = pluginName;
     loadPermDataFromDB();
 }

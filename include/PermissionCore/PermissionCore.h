@@ -22,7 +22,7 @@ struct PermExports UserPermissionList {
 
 class PermExports PermissionCore {
 public:
-    PermissionCore(string pluginName, bool enablePublicGroups);
+    PermissionCore(string pluginName);
 
     bool hasGroup(const string& name);
 

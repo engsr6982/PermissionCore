@@ -43,7 +43,7 @@ bool isPermissionRegistration(const string& pluginName, const string& permission
 }
 
 bool registerPermission(const string& pluginName, const string& permissionName, const string& permissionValue) {
-    if (!perm::PermissionCore::validatePermission(permissionValue)) return false;
+    // if (!perm::PermissionCore::validatePermission(permissionValue)) return false;
     if (isPermissionRegistration(pluginName, permissionValue)) return false;
     registerPerm[pluginName].push_back({permissionName, permissionValue});
     return true;

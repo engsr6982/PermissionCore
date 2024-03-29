@@ -48,7 +48,7 @@ bool entry::enable() {
 
     // Code for enabling the plugin goes here.
     perm::command::registerCommand();
-    perm::initPluginWithPermissionCore("permissioncore", false);
+    perm::initPluginWithPermissionCore("permissioncore");
 
     return true;
 }

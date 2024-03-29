@@ -21,6 +21,6 @@ private:
     std::unordered_map<std::string, std::shared_ptr<PermissionCore>> permissionCores;
 };
 
-PermExports void initPluginWithPermissionCore(const std::string& pluginName, bool enablePublicGroups);
+PermExports void initPluginWithPermissionCore(const std::string& pluginName);
 
 } // namespace perm
