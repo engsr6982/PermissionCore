@@ -141,16 +141,16 @@ bool PermissionCore::addPermissionToGroup(
 // 从组中移除权限
 bool PermissionCore::removePermissionToGroup(const string& groupName, const int& permissionValue) {
     if (!hasGroup(groupName) || !hasGroupPermission(groupName, permissionValue)) return false;
-    auto groupOpt = getGroup(groupName);
-    if (!groupOpt.has_value()) return false;
+    auto groupOpt = mData->find(groupName);
+    if (groupOpt == mData->end()) return false;
     auto& group  = *groupOpt;
     auto  permIt = std::find_if(
-        group.permissionList.begin(),
-        group.permissionList.end(),
+        group.second.permissionList.begin(),
+        group.second.permissionList.end(),
         [permissionValue](const group::Permission& perm) { return perm.value == permissionValue; }
     );
-    if (permIt != group.permissionList.end()) {
-        group.permissionList.erase(permIt);
+    if (permIt != group.second.permissionList.end()) {
+        group.second.permissionList.erase(permIt);
         return setPermDataToDB();
     }
     return false;
@@ -166,24 +166,25 @@ bool PermissionCore::isUserInGroup(const string& groupName, const string& name_u
 // 将用户添加到组
 bool PermissionCore::addUserToGroup(const string& groupName, const string& realName, const string& uuid) {
     if (!hasGroup(groupName) || isUserInGroup(groupName, realName)) return false;
-    auto groupOpt = getGroup(groupName);
-    if (!groupOpt.has_value()) return false;
+    auto groupOpt = mData->find(groupName);
+    if (groupOpt == mData->end()) return false;
     group::User us(realName, uuid);
-    groupOpt->userList.push_back(us);
+    groupOpt->second.userList.push_back(us);
     return setPermDataToDB();
 }
 
 // 从组中移除用户
 bool PermissionCore::removeUserToGroup(const string& groupName, const string& name_uuid) {
     if (!hasGroup(groupName) || !isUserInGroup(groupName, name_uuid)) return false;
-    auto groupOpt = getGroup(groupName);
-    if (!groupOpt.has_value()) return false;
-    auto& group  = *groupOpt;
-    auto  userIt = std::find_if(group.userList.begin(), group.userList.end(), [name_uuid](const group::User& user) {
-        return user.realName == name_uuid || user.uuid == name_uuid;
-    });
-    if (userIt != group.userList.end()) {
-        group.userList.erase(userIt);
+    auto groupOpt = mData->find(groupName);
+    if (groupOpt == mData->end()) return false;
+    auto& group = *groupOpt;
+    auto  userIt =
+        std::find_if(group.second.userList.begin(), group.second.userList.end(), [name_uuid](const group::User& user) {
+            return user.realName == name_uuid || user.uuid == name_uuid;
+        });
+    if (userIt != group.second.userList.end()) {
+        group.second.userList.erase(userIt);
         return setPermDataToDB();
     }
     return false;
