@@ -22,51 +22,41 @@ struct PermExports UserPermissionList {
 
 class PermExports PermissionCore {
 public:
-    PermissionCore(string pluginName);
+    PermissionCore(const string pluginName);
 
-    bool hasGroup(const string& name);
+    bool hasGroup(const string& groupName);
 
-    const std::optional<group::Group> getGroup(const string& name);
+    const std::optional<group::Group> getGroup(const string& groupName);
+    const std::vector<group::Group>   getAllGroups();
+    const std::vector<group::Group>   getAllGroupWithOpen();
+    const std::vector<group::Group>   getAllGroupWithDisabled();
 
-    const std::vector<group::Group> getAllGroups();
+    bool createGroup(const string& groupName);
+    bool deleteGroup(const string& groupName);
+    bool renameGroup(const string& groupName, const string& newGroupName);
 
-    // TODO:
-    const std::vector<group::Group> getAllGroupWithOpen();
-    const std::vector<group::Group> getAllGroupWithDisabled();
+    bool hasGroupPermission(const string& groupName, const int& permissionValue);
+    bool addPermissionToGroup(const string& groupName, const string& permissionName, const int& permissionValue);
+    bool removePermissionToGroup(const string& groupName, const int& permissionValue);
 
-    bool createGroup(const string& name, bool canBeDeleted);
+    bool isUserInGroup(const string& groupName, const string& name_uuid);
+    bool addUserToGroup(const string& groupName, const string& realName, const string& uuid);
+    bool removeUserToGroup(const string& groupName, const string& name_uuid);
 
-    bool deleteGroup(const string& name);
-
-    bool renameGroup(const string& name, const string& newGroupName);
-
-    bool hasGroupPermission(const string& name, const int& value);
-
-    bool addPermissionToGroup(const string& name, const string& permissionName, const int& value);
-
-    bool removePermissionToGroup(const string& name, const int& value);
-
-    bool isUserInGroup(const string& name, const string& identifier);
-
-    bool addUserToGroup(const string& name, const string& realName, const string& uuid);
-
-    bool removeUserToGroup(const string& name, const string& identifier);
-
-    const std::vector<group::Group> getGroupsOfUser(const string& identifier);
-
-    const std::optional<UserPermissionList> getUserPermission(const string& userid);
+    const std::vector<group::Group>         getGroupsOfUser(const string& name_uuid);
+    const std::optional<UserPermissionList> getUserPermission(const string& name_uuid);
 
     //! other
     bool checkUserPermission(
-        const string& userid,
-        const int&    value,
+        const string& name_uuid,
+        const int&    permissionValue,
         const bool    ignoreGroupStatus    = false,
         const bool    ignoreIgnoreListType = false
     );
 
     //! tools
-    static bool validateName(const string& name);
-    bool        trySyncDataToDB() { return setPermDataToDB(); }
+    static bool validateName(const string& groupName);
+    bool        trySyncDataToDB();
 
 private:
     std::unique_ptr<std::unordered_map<string, group::Group>> mData;

@@ -1,7 +1,6 @@
 #include "PermissionCore/PermissionCore.h"
 #include "DB/db.h"
 #include "PermissionCore/PermissionManager.h"
-#include "PermissionCore/Registers.h"
 #include "entry/Entry.h"
 #include <algorithm>
 #include <exception>
@@ -45,19 +44,19 @@ bool PermissionCore::loadPermDataFromDB() {
 
 bool PermissionCore::setPermDataToDB() { return perm::db::getInstance().setPluginData(mPluginName, *mData); }
 
-PermissionCore::PermissionCore(string pluginName) {
+PermissionCore::PermissionCore(const string pluginName) {
     mPluginName = pluginName;
     loadPermDataFromDB();
 }
 
 //! API接口 ===========================================================================
 // 检查组是否存在
-bool PermissionCore::hasGroup(const string& name) { return mData->find(name) != mData->end(); }
+bool PermissionCore::hasGroup(const string& groupName) { return mData->find(groupName) != mData->end(); }
 
 // 获取组
-const std::optional<group::Group> PermissionCore::getGroup(const string& name) {
-    if (hasGroup(name)) {
-        return mData->find(name)->second;
+const std::optional<group::Group> PermissionCore::getGroup(const string& groupName) {
+    if (hasGroup(groupName)) {
+        return mData->find(groupName)->second;
     }
     return std::nullopt;
 }
@@ -90,24 +89,24 @@ const std::vector<group::Group> PermissionCore::getAllGroupWithOpen() {
 }
 
 // 创建组
-bool PermissionCore::createGroup(const string& name, bool canBeDeleted) {
-    if (hasGroup(name) || !validateName(name)) return false;
-    group::Group gp(name, canBeDeleted);
-    mData->emplace(name, std::move(gp));
+bool PermissionCore::createGroup(const string& groupName) {
+    if (hasGroup(groupName) || !validateName(groupName)) return false;
+    group::Group gp(groupName);
+    mData->emplace(groupName, std::move(gp));
     return setPermDataToDB();
 }
 
 // 删除组
-bool PermissionCore::deleteGroup(const string& name) {
-    if (!hasGroup(name)) return false;
-    mData->erase(name);
+bool PermissionCore::deleteGroup(const string& groupName) {
+    if (!hasGroup(groupName)) return false;
+    mData->erase(groupName);
     return setPermDataToDB();
 }
 
 // 重命名组
-bool PermissionCore::renameGroup(const string& name, const string& newGroupName) {
-    if (!hasGroup(name) || !validateName(newGroupName)) return false;
-    auto groupIt = mData->find(name);
+bool PermissionCore::renameGroup(const string& groupName, const string& newGroupName) {
+    if (!hasGroup(groupName) || !validateName(newGroupName)) return false;
+    auto groupIt = mData->find(groupName);
     if (groupIt == mData->end()) return false;
 
     group::Group group = groupIt->second;           // 复制原来的组
@@ -118,33 +117,38 @@ bool PermissionCore::renameGroup(const string& name, const string& newGroupName)
 }
 
 // 检查组是否具有特定权限
-bool PermissionCore::hasGroupPermission(const string& name, const int& value) {
-    auto group = getGroup(name);
+bool PermissionCore::hasGroupPermission(const string& groupName, const int& permissionValue) {
+    auto group = getGroup(groupName);
     if (!group.has_value()) return false;
-    return group->hasPermission(value);
+    return group->hasPermission(permissionValue);
 }
 
 // 向组添加权限
-bool PermissionCore::addPermissionToGroup(const string& name, const string& permissionName, const int& value) {
-    if (!hasGroup(name) || hasGroupPermission(name, value)) return false;
-    auto groupIt = mData->find(name);
+bool PermissionCore::addPermissionToGroup(
+    const string& groupName,
+    const string& permissionName,
+    const int&    permissionValue
+) {
+    if (!hasGroup(groupName) || hasGroupPermission(groupName, permissionValue)) return false;
+    auto groupIt = mData->find(groupName);
     if (groupIt == mData->end()) return false;
 
-    group::Permission pr(permissionName, value);
+    group::Permission pr(permissionName, permissionValue);
     groupIt->second.permissionList.push_back(pr);
     return setPermDataToDB();
 }
 
 // 从组中移除权限
-bool PermissionCore::removePermissionToGroup(const string& name, const int& value) {
-    if (!hasGroup(name) || !hasGroupPermission(name, value)) return false;
-    auto groupOpt = getGroup(name);
+bool PermissionCore::removePermissionToGroup(const string& groupName, const int& permissionValue) {
+    if (!hasGroup(groupName) || !hasGroupPermission(groupName, permissionValue)) return false;
+    auto groupOpt = getGroup(groupName);
     if (!groupOpt.has_value()) return false;
-    auto& group = *groupOpt;
-    auto  permIt =
-        std::find_if(group.permissionList.begin(), group.permissionList.end(), [value](const group::Permission& perm) {
-            return perm.value == value;
-        });
+    auto& group  = *groupOpt;
+    auto  permIt = std::find_if(
+        group.permissionList.begin(),
+        group.permissionList.end(),
+        [permissionValue](const group::Permission& perm) { return perm.value == permissionValue; }
+    );
     if (permIt != group.permissionList.end()) {
         group.permissionList.erase(permIt);
         return setPermDataToDB();
@@ -153,16 +157,16 @@ bool PermissionCore::removePermissionToGroup(const string& name, const int& valu
 }
 
 // 检查组是否有指定用户
-bool PermissionCore::isUserInGroup(const string& name, const string& identifier) {
-    auto group = getGroup(name);
+bool PermissionCore::isUserInGroup(const string& groupName, const string& name_uuid) {
+    auto group = getGroup(groupName);
     if (!group.has_value()) return false;
-    return group->hasUser(identifier);
+    return group->hasUser(name_uuid);
 }
 
 // 将用户添加到组
-bool PermissionCore::addUserToGroup(const string& name, const string& realName, const string& uuid) {
-    if (!hasGroup(name) || isUserInGroup(name, realName)) return false;
-    auto groupOpt = getGroup(name);
+bool PermissionCore::addUserToGroup(const string& groupName, const string& realName, const string& uuid) {
+    if (!hasGroup(groupName) || isUserInGroup(groupName, realName)) return false;
+    auto groupOpt = getGroup(groupName);
     if (!groupOpt.has_value()) return false;
     group::User us(realName, uuid);
     groupOpt->userList.push_back(us);
@@ -170,13 +174,13 @@ bool PermissionCore::addUserToGroup(const string& name, const string& realName, 
 }
 
 // 从组中移除用户
-bool PermissionCore::removeUserToGroup(const string& name, const string& identifier) {
-    if (!hasGroup(name) || !isUserInGroup(name, identifier)) return false;
-    auto groupOpt = getGroup(name);
+bool PermissionCore::removeUserToGroup(const string& groupName, const string& name_uuid) {
+    if (!hasGroup(groupName) || !isUserInGroup(groupName, name_uuid)) return false;
+    auto groupOpt = getGroup(groupName);
     if (!groupOpt.has_value()) return false;
     auto& group  = *groupOpt;
-    auto  userIt = std::find_if(group.userList.begin(), group.userList.end(), [identifier](const group::User& user) {
-        return user.realName == identifier;
+    auto  userIt = std::find_if(group.userList.begin(), group.userList.end(), [name_uuid](const group::User& user) {
+        return user.realName == name_uuid || user.uuid == name_uuid;
     });
     if (userIt != group.userList.end()) {
         group.userList.erase(userIt);
@@ -186,12 +190,12 @@ bool PermissionCore::removeUserToGroup(const string& name, const string& identif
 }
 
 // 获取用户所在的组
-const std::vector<group::Group> PermissionCore::getGroupsOfUser(const string& identifier) {
+const std::vector<group::Group> PermissionCore::getGroupsOfUser(const string& name_uuid) {
     std::vector<group::Group> us;
 
     auto& userGroup = *mData;
     for (const auto& group : userGroup) {
-        if (group.second.hasUser(identifier)) {
+        if (group.second.hasUser(name_uuid)) {
             us.push_back(group.second);
         }
     }
@@ -199,10 +203,10 @@ const std::vector<group::Group> PermissionCore::getGroupsOfUser(const string& id
 }
 
 // 获取用户权限
-const std::optional<UserPermissionList> PermissionCore::getUserPermission(const string& userid) {
+const std::optional<UserPermissionList> PermissionCore::getUserPermission(const string& name_uuid) {
     UserPermissionList data;
 
-    auto groups = getGroupsOfUser(userid);
+    auto groups = getGroupsOfUser(name_uuid);
     for (const auto& group : groups) {
         if (group.userList.empty() || group.permissionList.empty()) continue;
         for (const auto& perm : group.permissionList) {
@@ -228,8 +232,8 @@ const std::optional<UserPermissionList> PermissionCore::getUserPermission(const 
 
 // 检查用户是否具有特定权限
 bool PermissionCore::checkUserPermission(
-    const string& userid,
-    const int&    value,
+    const string& name_uuid,
+    const int&    permissionValue,
     const bool    ignoreGroupStatus,
     const bool    ignoreIgnoreListType
 ) {
@@ -249,26 +253,26 @@ bool PermissionCore::checkUserPermission(
             switch (group.ignoreListType) {
             case group::IgnoreListType::UserList:
                 // 忽略用户列表，只检查权限
-                if (group.hasPermission(value)) {
+                if (group.hasPermission(permissionValue)) {
                     return true;
                 }
                 break;
             case group::IgnoreListType::PermissionList:
                 // 忽略权限列表，只检查用户
-                if (group.hasUser(userid)) {
+                if (group.hasUser(name_uuid)) {
                     return true;
                 }
                 break;
             case group::IgnoreListType::None:
                 // 不忽略，需要同时检查用户和权限
-                if (group.hasUser(userid) && group.hasPermission(value)) {
+                if (group.hasUser(name_uuid) && group.hasPermission(permissionValue)) {
                     return true;
                 }
                 break;
             }
         } else {
             // 忽略ignoreListType，只要用户在组中或组有此权限即可
-            if (group.hasUser(userid) || group.hasPermission(value)) {
+            if (group.hasUser(name_uuid) || group.hasPermission(permissionValue)) {
                 return true;
             }
         }
@@ -281,9 +285,10 @@ bool PermissionCore::checkUserPermission(
 //! 辅助函数  ===========================================================================
 
 // 检查名称是否合法 (允许1-16字节，允许中文字母，数字，下划线)
-bool PermissionCore::validateName(const string& name) {
+bool PermissionCore::validateName(const string& groupName) {
     std::regex pattern("^[a-zA-Z0-9_\u4e00-\u9fa5]{1,16}$");
-    return std::regex_match(name, pattern);
+    return std::regex_match(groupName, pattern);
 }
+bool PermissionCore::trySyncDataToDB() { return setPermDataToDB(); }
 
 } // namespace perm

@@ -41,10 +41,7 @@ struct PermExports Group {
     GroupStatus             status;         // only api: checkUserPermission use
     IgnoreListType          ignoreListType; // only api: checkUserPermission use
 
-    Group(const string& name, bool deletable)
-    : groupName(name),
-      status(GroupStatus::Open),
-      ignoreListType(IgnoreListType::None) {
+    Group(const string& name) : groupName(name), status(GroupStatus::Open), ignoreListType(IgnoreListType::None) {
         userList       = std::vector<User>();
         permissionList = std::vector<Permission>();
     }
@@ -57,9 +54,9 @@ struct PermExports Group {
     }
 
     // 查找用户
-    const User* findUser(const string& identifier) const {
+    const User* findUser(const string& name_uuid) const {
         for (const auto& user : userList) {
-            if (user.uuid == identifier || user.realName == identifier) {
+            if (user.uuid == name_uuid || user.realName == name_uuid) {
                 return &user;
             }
         }
@@ -87,7 +84,7 @@ struct PermExports Group {
     }
 
     // 根据权限值查找权限
-    const Permission* findPermissionWithValue(int value) const {
+    const Permission* findPermissionWithValue(const int& value) const {
         for (const auto& perm : permissionList) {
             if (perm.value == value) {
                 return &perm;
@@ -96,7 +93,7 @@ struct PermExports Group {
         return nullptr;
     }
 
-    bool hasUser(const string& identifier) const { return findUser(identifier) != nullptr; }
+    bool hasUser(const string& name_uuid) const { return findUser(name_uuid) != nullptr; }
     bool hasPermission(const int& value) const { return findPermissionWithValue(value) != nullptr; }
 
     // tools

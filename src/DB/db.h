@@ -3,7 +3,6 @@
 #include "PermissionCore/Group.h"
 #include "PermissionCore/PermissionCore.h"
 #include "PermissionCore/PermissionManager.h"
-#include "PermissionCore/Registers.h"
 #include <ll/api/data/KeyValueDB.h>
 #include <nlohmann/json.hpp>
 #include <nlohmann/json_fwd.hpp>
