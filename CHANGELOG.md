@@ -7,6 +7,19 @@
 
 ## [Unreleased]
 
+## [0.4.0] - 2024-3-30
+
+### Changed
+
+- feat: update group.h
+- refactor: db.h & db.cpp
+- refactor: permissioncore
+- feat: add hasRegisterPermissionCore
+- feat: add Form & Command
+- chore: remove enablePublicGroups in constructor
+- chore: creat Permission.h
+- refactor: PermissionRegister
+
 ## [0.3.0] - 2024-03-27
 
 ### Changed
