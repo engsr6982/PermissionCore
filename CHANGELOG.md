@@ -7,6 +7,12 @@
 
 ## [Unreleased]
 
+## [0.4.1] - 2024-3-31
+
+### Fixed
+
+- fix: fixed removeUserToGroup、addUserToGroup、removePermissionToGroup
+
 ## [0.4.0] - 2024-3-30
 
 ### Changed
