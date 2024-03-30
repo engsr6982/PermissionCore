@@ -4,6 +4,8 @@
 #include <memory>
 
 // my
+#include "Command/Command.h"
+#include "Form/Global.h"
 #include "db/db.h"
 
 
@@ -36,7 +38,7 @@ bool entry::load(ll::plugin::NativePlugin& self) {
     getSelf().getLogger().info("loading...");
 
     // Code for loading the plugin goes here.
-    perm::db::loadLevelDB();
+    perm::db::getInstance().loadLevelDB();
 
     return true;
 }
@@ -45,6 +47,8 @@ bool entry::enable() {
     getSelf().getLogger().info("enabling...");
 
     // Code for enabling the plugin goes here.
+    perm::command::registerCommand();
+    perm::initPluginWithPermissionCore("permissioncore");
 
     return true;
 }
