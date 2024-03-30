@@ -1,32 +1,34 @@
 # PermissionCore 权限组核心
 
-一个适用于`Levilamina`的非官方权限组前置
+一个适用于`Levilamina`的非官方权限组前置, 旨在为`Levilamina`原生插件提供一个权限组轮子
 
 ## 功能
 
-- 管理组  
-    可以理解为插件的全局管理员
-- 用户组  
-    细分插件权限给用户
-- 公共组  
-    开放权限给所有玩家
+本插件对外提供的 API，主要分为以下三大块
+
+- 权限核心  
+  每个插件创建一个自己的核心，提供权限核心 API
+
+- 权限管理  
+  每个插件创建的核心注册到管理进行全局管理，开发者可以从这里获取已注册的权限核心
+
 - 权限注册  
-    动态注册权限（为数据库中的权限值提供翻译）
-- GUI全局管理  
-    todo...
+  插件可以把权限注册到这个 API 中，这可以为将来的 GUI 提供权限显示，无需用户记忆权限值
 
-## 实现
+## 安装使用
 
-本插件照搬的自己的JS版本（GUI还没搬完）
+### 用户
 
-采用`LevelDB`存储数据，对每个插件的数据进行存储
+使用 Lip 一键安装
 
-权限注册采用动态注册（也就是不会保存）
+```bash
+lip install github.com/engsr6982/PermissionCore
+```
 
-## How to use?
+### 开发者
 
-以下是按照传统的submodule形式使用PermissionCore  
-如果需要xmake来管理PermissionCore，请参考测试仓库的[xmake.lua](https://github.com/engsr6982/PermissionCoreTest/blob/main/xmake.lua)
+> 以下是按照传统的 submodule 形式使用 PermissionCore  
+> 如果需要 xmake 来管理 PermissionCore，请参考测试仓库的[xmake.lua](https://github.com/engsr6982/PermissionCoreTest/blob/main/xmake.lua)
 
 - Step1:
 
