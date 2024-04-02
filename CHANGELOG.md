@@ -7,6 +7,12 @@
 
 ## [Unreleased]
 
+## [0.5.0] - 2024-4-2
+
+### Changed
+
+- try support Levilamina 0.10.5
+
 ## [0.4.1] - 2024-3-31
 
 ### Fixed
