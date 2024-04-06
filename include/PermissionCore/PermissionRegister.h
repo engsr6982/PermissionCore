@@ -24,6 +24,8 @@ public:
     string                           getPermissionName(const string& pluginName, const int& permissionValue);
     int                              getPermissionValue(const string& pluginName, const string& permissionName);
 
+    std::vector<string> getAllKeys();
+
 private:
     PermissionRegister() = default;
     std::unordered_map<string, std::vector<group::Permission>> mRegisterData;

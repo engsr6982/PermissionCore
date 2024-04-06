@@ -1,4 +1,5 @@
 #include "PermissionCore/PermissionManager.h"
+#include <vector>
 
 namespace perm {
 
@@ -42,12 +43,19 @@ bool PermissionManager::hasRegisterPermissionCore(const std::string& pluginName)
     return permissionCores.find(pluginName) != permissionCores.end();
 }
 
+std::vector<string> PermissionManager::getAllKeys() {
+    std::vector<string> keys;
+    for (const auto& pair : permissionCores) {
+        keys.push_back(pair.first);
+    }
+    return keys;
+}
 
-void initPluginWithPermissionCore(const std::string& pluginName) {
-    auto permCore = std::make_shared<PermissionCore>(pluginName);
-
-    bool registered = PermissionManager::getInstance().registerPermissionCore(pluginName, permCore);
-    if (!registered) {
+void AutoRegisterCoreToManager(const std::string& pluginName) {
+    auto __TryRegisterCore = std::make_shared<PermissionCore>(pluginName);
+    bool __TryRegisterToManager =
+        PermissionManager::getInstance().registerPermissionCore(pluginName, __TryRegisterCore);
+    if (!__TryRegisterToManager) {
         throw std::runtime_error("Plugin registration failed: " + pluginName);
     }
 }

@@ -3,6 +3,7 @@
 #include "PermissionCore.h"
 #include <stdexcept>
 #include <unordered_map>
+#include <vector>
 
 namespace perm {
 
@@ -16,11 +17,13 @@ public:
 
     bool hasRegisterPermissionCore(const std::string& pluginName);
 
+    std::vector<string> getAllKeys();
+
 private:
     PermissionManager() = default;
     std::unordered_map<std::string, std::shared_ptr<PermissionCore>> permissionCores;
 };
 
-PermExports void initPluginWithPermissionCore(const std::string& pluginName);
+PermExports void AutoRegisterCoreToManager(const std::string& pluginName);
 
 } // namespace perm
