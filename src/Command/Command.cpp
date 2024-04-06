@@ -132,6 +132,11 @@ struct TranslateParam {
     string        name_uuid;
 };
 
+struct ListGroups {
+    string pluginName;
+    string groupName;
+};
+
 void registerCommand() {
     auto& cmd  = ll::command::CommandRegistrar::getInstance().getOrCreateCommand("permc");
     auto  core = perm::PermissionManager::getInstance().getPermissionCore("permissioncore");
@@ -421,11 +426,12 @@ void registerCommand() {
     }>();
 
     // permc list groups <string pluginName> [string groupname]
-    cmd.overload<PermParamWithString>()
+    cmd.overload<ListGroups>()
         .text("list")
         .text("groups")
         .required("pluginName")
-        .execute<[&](CommandOrigin const& origin, CommandOutput& output, PermParamWithString const& param) {
+        .optional("groupName")
+        .execute<[&](CommandOrigin const& origin, CommandOutput& output, ListGroups const& param) {
             CHECK_COMMAND_TYPE(
                 output,
                 origin.getOriginType(),
@@ -454,47 +460,6 @@ void registerCommand() {
                 }
             } else {
                 output.error("The plugin '{}' is not registered", param.pluginName.c_str());
-            }
-        }>();
-
-    // permc translate <realname|uuid> <string name_uuid>
-    cmd.overload<TranslateParam>()
-        .text("translate")
-        .required("type")
-        .required("name_uuid")
-        .execute<[&](CommandOrigin const& origin, CommandOutput& output, TranslateParam const& param) {
-            try {
-                CHECK_COMMAND_TYPE(
-                    output,
-                    origin.getOriginType(),
-                    CommandOriginType::Player,
-                    CommandOriginType::DedicatedServer
-                );
-                if (origin.getOriginType() == CommandOriginType::Player) {
-                    auto& player = *static_cast<Player*>(origin.getEntity()); // entity* => Player&
-                    if (!player.isOperator()) return noPermission(output);
-                }
-                if (param.name_uuid.empty()) return output.error("The name_uuid cannot be empty.");
-                switch (param.type) {
-                case TranslateType::realname: {
-                    output.success(
-                        "Translate realName '{}' to uuid '{}'",
-                        param.name_uuid,
-                        ll::service::PlayerInfo::getInstance().fromName(param.name_uuid)->uuid.asString().c_str()
-                    );
-                } break;
-                case TranslateType::uuid: {
-                    output.success(
-                        "Translate uuid '{}' to realName '{}'",
-                        param.name_uuid,
-                        ll::service::PlayerInfo::getInstance().fromUuid(param.name_uuid)->name.c_str()
-                    );
-                }
-                }
-            } catch (std::exception const& e) {
-                output.error("Faild to translate '{}', stack: {}", param.name_uuid.c_str(), e.what());
-            } catch (...) {
-                output.error("Faild to translate '{}', Unknown error", param.name_uuid.c_str());
             }
         }>();
 
