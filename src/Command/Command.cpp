@@ -126,7 +126,7 @@ struct PermParamWithString {
     int               permValue;
 };
 
-enum TranslateType : int { realName = 0, uuid = 1 };
+enum TranslateType : int { realname = 0, uuid = 1 };
 struct TranslateParam {
     TranslateType type;
     string        name_uuid;
@@ -420,11 +420,11 @@ void registerCommand() {
         output.success("Total {} plugins registered.", keys.size());
     }>();
 
-    // permc list groups [string pluginName]
+    // permc list groups <string pluginName> [string groupname]
     cmd.overload<PermParamWithString>()
         .text("list")
         .text("groups")
-        .optional("pluginName")
+        .required("pluginName")
         .execute<[&](CommandOrigin const& origin, CommandOutput& output, PermParamWithString const& param) {
             CHECK_COMMAND_TYPE(
                 output,
@@ -439,20 +439,29 @@ void registerCommand() {
             PermissionManager& manager = PermissionManager::getInstance();
             if (manager.hasRegisterPermissionCore(param.pluginName)) {
                 PermissionCore& core = *manager.getPermissionCore(param.pluginName);
-                auto            keys = core.getAllGroups();
-                if (keys.empty()) return output.success("No registered groups.");
-                for (auto& key : keys) {
-                    output.success("Group: {}", key.groupName);
+                if (param.groupName.empty()) {
+                    auto allGroups = core.getAllGroups();
+                    if (allGroups.empty()) return output.success("No registered groups.");
+                    for (auto& group : allGroups) {
+                        output.success("Group: {}", group.groupName);
+                    }
+                    output.success("Total {} groups registered.", allGroups.size());
+                } else {
+                    if (core.hasGroup(param.groupName)) {
+                        auto group = core.getGroup(param.groupName);
+                        output.success("Group: {}", group->toString(2));
+                    }
                 }
-                output.success("Total {} groups registered.", keys.size());
             } else {
                 output.error("The plugin '{}' is not registered", param.pluginName.c_str());
             }
         }>();
 
-    // permc translate <realName|uuid> <string name_uuid>
+    // permc translate <realname|uuid> <string name_uuid>
     cmd.overload<TranslateParam>()
         .text("translate")
+        .required("type")
+        .required("name_uuid")
         .execute<[&](CommandOrigin const& origin, CommandOutput& output, TranslateParam const& param) {
             try {
                 CHECK_COMMAND_TYPE(
@@ -467,7 +476,7 @@ void registerCommand() {
                 }
                 if (param.name_uuid.empty()) return output.error("The name_uuid cannot be empty.");
                 switch (param.type) {
-                case TranslateType::realName: {
+                case TranslateType::realname: {
                     output.success(
                         "Translate realName '{}' to uuid '{}'",
                         param.name_uuid,
