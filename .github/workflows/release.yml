@@ -118,6 +118,7 @@ jobs:
 
       - uses: softprops/action-gh-release@v1
         with:
+          append_body: true
           body: |-
             | ${{ github.event.repository.name }}-windows-x64.zip | ${{ steps.calculate-sha256-core.outputs.sha256 }} |
             | SDK-PermissionCore.zip                              | ${{ steps.calculate-sha256-sdk.outputs.sha256 }}  |
