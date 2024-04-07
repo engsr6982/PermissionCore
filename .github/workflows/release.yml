@@ -72,6 +72,9 @@ jobs:
           body: |
             ${{ steps.extract-release-notes.outputs.release_notes }}
 
+            | File | SHA256 |
+            | ---- | ------ |
+
   upload-to-release:
     needs:
       - build
@@ -105,8 +108,19 @@ jobs:
           zip -r ../SDK-PermissionCore.zip *
         working-directory: sdk-artifact
 
+      - id: calculate-sha256-core
+        run: |
+          echo sha256=$(sha256sum ${{ github.event.repository.name }}-windows-x64.zip | awk '{print $1}') >> $GITHUB_OUTPUT
+
+      - id: calculate-sha256-sdk
+        run: |
+          echo sha256=$(sha256sum SDK-PermissionCore.zip | awk '{print $1}') >> $GITHUB_OUTPUT
+
       - uses: softprops/action-gh-release@v1
         with:
+          body: |-
+            | ${{ github.event.repository.name }}-windows-x64.zip | ${{ steps.calculate-sha256-core.outputs.sha256 }} |
+            | SDK-PermissionCore.zip                              | ${{ steps.calculate-sha256-sdk.outputs.sha256 }}  |
           files: |
             ${{ github.event.repository.name }}-windows-x64.zip
             SDK-PermissionCore.zip
