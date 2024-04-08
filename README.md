@@ -13,7 +13,7 @@
   每个插件创建的核心注册到管理进行全局管理，开发者可以从这里获取已注册的权限核心
 
 - 权限注册  
-  插件可以把权限注册到这个 API 中，这可以为将来的 GUI 提供权限显示，无需用户记忆权限值
+  插件需要把权限注册到这个 API 中，这可以为将来的Command、GUI提供查询支持
 
 ## 安装使用
 
@@ -55,9 +55,7 @@ project:
 
 - Step2:
 
-打开`xmake.lua`
-
-在`target`后面加上
+打开`xmake.lua`，在`target`后面加上
 
 ```lua
 target("Levilamina-Plugin-Template")
