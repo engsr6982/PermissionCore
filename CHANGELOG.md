@@ -7,6 +7,12 @@
 
 ## [Unreleased]
 
+## [0.6.0] - 2024-4-11
+
+### Added
+
+- Add Command Support.
+
 ## [0.5.0] - 2024-4-2
 
 ### Changed
