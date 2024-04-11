@@ -1,6 +1,7 @@
 #include "PermissionCore/PermissionRegister.h"
 #include "PermissionCore/PermissionCore.h"
 #include <algorithm>
+#include <vector>
 
 
 namespace perm {
@@ -101,6 +102,14 @@ int PermissionRegister::getPermissionValue(const string& pluginName, const strin
         }
     }
     return -1;
+}
+
+std::vector<string> PermissionRegister::getAllKeys() {
+    std::vector<string> keys(mRegisterData.size());
+    std::transform(mRegisterData.begin(), mRegisterData.end(), keys.begin(), [](const auto& pair) {
+        return pair.first;
+    });
+    return keys;
 }
 
 } // namespace perm

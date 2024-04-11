@@ -54,7 +54,7 @@ struct PermExports Group {
     }
 
     // 查找用户
-    const User* findUser(const string& name_uuid) const {
+    inline const User* findUser(const string& name_uuid) const {
         for (const auto& user : userList) {
             if (user.uuid == name_uuid || user.realName == name_uuid) {
                 return &user;
@@ -64,7 +64,7 @@ struct PermExports Group {
     }
 
     // 根据UUID查找用户
-    const User* findUserWithUuid(const string& uuid) const {
+    inline const User* findUserWithUuid(const string& uuid) const {
         for (const auto& user : userList) {
             if (user.uuid == uuid) {
                 return &user;
@@ -74,7 +74,7 @@ struct PermExports Group {
     }
 
     // 根据realName查找用户
-    const User* findUserWithRealName(const string& realName) const {
+    inline const User* findUserWithRealName(const string& realName) const {
         for (const auto& user : userList) {
             if (user.realName == realName) {
                 return &user;
@@ -84,7 +84,7 @@ struct PermExports Group {
     }
 
     // 根据权限值查找权限
-    const Permission* findPermissionWithValue(const int& value) const {
+    inline const Permission* findPermissionWithValue(const int& value) const {
         for (const auto& perm : permissionList) {
             if (perm.value == value) {
                 return &perm;
@@ -93,11 +93,11 @@ struct PermExports Group {
         return nullptr;
     }
 
-    bool hasUser(const string& name_uuid) const { return findUser(name_uuid) != nullptr; }
-    bool hasPermission(const int& value) const { return findPermissionWithValue(value) != nullptr; }
+    inline bool hasUser(const string& name_uuid) const { return findUser(name_uuid) != nullptr; }
+    inline bool hasPermission(const int& value) const { return findPermissionWithValue(value) != nullptr; }
 
     // tools
-    static Group fromJSON(const json& j) {
+    inline static Group fromJSON(const json& j) {
         string         name       = j["groupName"].get<std::string>();
         GroupStatus    grpStatus  = static_cast<GroupStatus>(j["status"].get<int>());
         IgnoreListType ignoreType = static_cast<IgnoreListType>(j["ignoreListType"].get<int>());
@@ -124,7 +124,7 @@ struct PermExports Group {
         return group;
     }
 
-    json toJson() const {
+    inline json toJson() const {
         json jsonGroup;
         jsonGroup["groupName"]      = groupName;
         jsonGroup["status"]         = static_cast<int>(status);
@@ -153,7 +153,7 @@ struct PermExports Group {
         return jsonGroup;
     }
 
-    string toString(int indent) const { return toJson().dump(indent); }
+    inline string toString(int indent) const { return toJson().dump(indent); }
 };
 
 } // namespace perm::group
