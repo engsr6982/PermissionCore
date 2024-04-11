@@ -456,8 +456,8 @@ void registerCommand() {
             }
         }>();
 
-    // permc list perms
-    cmd.overload().text("list").text("perms").execute<[&](CommandOrigin const& origin, CommandOutput& output) {
+    // permc list perm
+    cmd.overload().text("list").text("perm").execute<[&](CommandOrigin const& origin, CommandOutput& output) {
         CHECK_COMMAND_TYPE(
             output,
             origin.getOriginType(),
@@ -477,8 +477,8 @@ void registerCommand() {
         output.success("Total {} plugins registered.", keys.size());
     }>();
 
-    // permc list plugins
-    cmd.overload().text("list").text("plugins").execute<[&](CommandOrigin const& origin, CommandOutput& output) {
+    // permc list plugin
+    cmd.overload().text("list").text("plugin").execute<[&](CommandOrigin const& origin, CommandOutput& output) {
         CHECK_COMMAND_TYPE(
             output,
             origin.getOriginType(),
@@ -498,10 +498,10 @@ void registerCommand() {
         output.success("Total {} plugins registered.", keys.size());
     }>();
 
-    // permc list groups <string pluginName> [string groupname]
+    // permc list group <string pluginName> [string groupname]
     cmd.overload<ListGroups>()
         .text("list")
-        .text("groups")
+        .text("group")
         .required("pluginName")
         .optional("groupName")
         .execute<[&](CommandOrigin const& origin, CommandOutput& output, ListGroups const& param) {
