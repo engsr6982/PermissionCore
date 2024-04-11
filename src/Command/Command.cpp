@@ -34,6 +34,16 @@
 
 namespace perm::command {
 
+#define C_RESET  "\033[0m"
+#define C_BLACK  "\033[30m" /* Black */
+#define C_RED    "\033[31m" /* Red */
+#define C_GREEN  "\033[32m" /* Green */
+#define C_YELLOW "\033[33m" /* Yellow */
+#define C_BLUE   "\033[34m" /* Blue */
+#define C_PURPLE "\033[35m" /* Purple */
+#define C_CYAN   "\033[36m" /* Cyan */
+#define C_WHITE  "\033[37m" /* White */
+
 std::string CommandOriginTypeToString(CommandOriginType type) {
     switch (type) {
     case CommandOriginType::Player:
@@ -126,10 +136,10 @@ struct PermParamWithString {
     int               permValue;
 };
 
-enum TranslateType : int { realname = 0, uuid = 1 };
-struct TranslateParam {
-    TranslateType type;
-    string        name_uuid;
+struct GroupParamWithString {
+    OperationAddOrDel add_del;
+    string            pluginName;
+    string            groupName;
 };
 
 struct ListGroups {
@@ -383,6 +393,69 @@ void registerCommand() {
             }
         }>();
 
+    // permc group <add|del> <string pluginName> <string groupName>
+    cmd.overload<GroupParamWithString>()
+        .text("group")
+        .required("add_del")
+        .required("pluginName")
+        .required("groupName")
+        .execute<[&](CommandOrigin const& origin, CommandOutput& output, GroupParamWithString const& param) {
+            CHECK_COMMAND_TYPE(
+                output,
+                origin.getOriginType(),
+                CommandOriginType::Player,
+                CommandOriginType::DedicatedServer
+            );
+            if (origin.getOriginType() == CommandOriginType::Player) {
+                auto& player = *static_cast<Player*>(origin.getEntity()); // entity* => Player&
+                if (!player.isOperator()) return noPermission(output);
+            }
+            PermissionManager& manager = PermissionManager::getInstance();
+            if (manager.hasRegisterPermissionCore(param.pluginName)) {
+                PermissionCore& core = *manager.getPermissionCore(param.pluginName);
+                switch (param.add_del) {
+                case OperationAddOrDel::add: {
+                    bool status = core.createGroup(param.groupName);
+                    if (status) {
+                        output.success(
+                            "Add group '{}' in plugin '{}' state '{}'",
+                            param.groupName,
+                            param.pluginName,
+                            status ? "Success" : "Fail"
+                        );
+                    } else {
+                        output.error(
+                            "Add group '{}' in plugin '{}' state '{}'",
+                            param.groupName,
+                            param.pluginName,
+                            status ? "Success" : "Fail"
+                        );
+                    }
+                } break;
+                case OperationAddOrDel::del: {
+                    bool status = core.deleteGroup(param.groupName);
+                    if (status) {
+                        output.success(
+                            "Delete group '{}' in plugin '{}' state '{}'",
+                            param.groupName,
+                            param.pluginName,
+                            status ? "Success" : "Fail"
+                        );
+                    } else {
+                        output.error(
+                            "Delete group '{}' in plugin '{}' state '{}'",
+                            param.groupName,
+                            param.pluginName,
+                            status ? "Success" : "Fail"
+                        );
+                    }
+                } break;
+                }
+            } else {
+                output.error("The plugin '{}' is not registered", param.pluginName.c_str());
+            }
+        }>();
+
     // permc list perms
     cmd.overload().text("list").text("perms").execute<[&](CommandOrigin const& origin, CommandOutput& output) {
         CHECK_COMMAND_TYPE(
@@ -452,11 +525,9 @@ void registerCommand() {
                         output.success("Group: {}", group.groupName);
                     }
                     output.success("Total {} groups registered.", allGroups.size());
-                } else {
-                    if (core.hasGroup(param.groupName)) {
-                        auto group = core.getGroup(param.groupName);
-                        output.success("Group: {}", group->toString(2));
-                    }
+                } else if (core.hasGroup(param.groupName)) {
+                    auto group = core.getGroup(param.groupName);
+                    output.success("Group: {}", group->toString(2));
                 }
             } else {
                 output.error("The plugin '{}' is not registered", param.pluginName.c_str());
