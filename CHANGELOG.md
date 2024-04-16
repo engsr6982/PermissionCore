@@ -7,6 +7,12 @@
 
 ## [Unreleased]
 
+## [0.6.2] - 2024-4-16
+
+### Fixed
+
+- Fixed tooth.json
+
 ## [0.6.1] - 2024-4-16
 
 ### Apadted
