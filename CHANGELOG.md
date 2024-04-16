@@ -7,6 +7,12 @@
 
 ## [Unreleased]
 
+## [0.6.1] - 2024-4-16
+
+### Apadted
+
+- Supported Levilamina 0.11.0
+
 ## [0.6.0] - 2024-4-11
 
 ### Added
