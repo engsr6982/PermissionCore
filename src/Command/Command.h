@@ -50,7 +50,7 @@ void registerCommand();
 // #define C_CYAN   "\033[36m" /* Cyan */
 // #define C_WHITE  "\033[37m" /* White */
 
-string CommandOriginTypeToString(CommandOriginType type) {
+inline string CommandOriginTypeToString(CommandOriginType type) {
     switch (type) {
     case CommandOriginType::Player:
         return "players";
