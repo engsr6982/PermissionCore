@@ -1,7 +1,11 @@
 #include "PermissionCore/PermissionManager.h"
+#include "ll/api/i18n/I18n.h"
 #include <vector>
 
+
 namespace perm {
+
+using ll::i18n_literals ::operator""_tr;
 
 PermissionManager& PermissionManager::getInstance() {
     static PermissionManager instance;
@@ -56,7 +60,7 @@ void AutoRegisterCoreToManager(const std::string& pluginName) {
     bool __TryRegisterToManager =
         PermissionManager::getInstance().registerPermissionCore(pluginName, __TryRegisterCore);
     if (!__TryRegisterToManager) {
-        throw std::runtime_error("Plugin registration failed: " + pluginName);
+        throw std::runtime_error("Plugin registration failed: '{}'"_tr(pluginName));
     }
 }
 

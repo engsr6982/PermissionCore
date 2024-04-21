@@ -2,6 +2,7 @@
 #include "DB/db.h"
 #include "PermissionCore/PermissionManager.h"
 #include "entry/Entry.h"
+#include "ll/api/i18n/I18n.h"
 #include <algorithm>
 #include <exception>
 #include <fstream>
@@ -19,12 +20,13 @@ namespace perm {
 
 using json   = nlohmann::json;
 using string = std::string;
+using ll::i18n_literals ::operator""_tr;
 
 // tools
 bool PermissionCore::loadPermDataFromDB() {
     auto& logger = entry::entry::getInstance().getSelf().getLogger();
     if (mData != nullptr) {
-        logger.warn("Do not repeat the initialization");
+        logger.warn("Do not repeat the initialization"_tr());
         return true;
     }
     if (!perm::db::getInstance().isPluginInit(mPluginName)) {
@@ -35,10 +37,10 @@ bool PermissionCore::loadPermDataFromDB() {
         mData = std::unique_ptr<std::unordered_map<std::string, group::Group>>(
             new std::unordered_map<std::string, group::Group>(*d)
         );
-        logger.info("Initialization of plugin {} permission data is successful", mPluginName);
+        logger.info("Initialization of plugin '{}' permission data is successful"_tr(mPluginName));
         return true;
     }
-    logger.fatal("Failed to initialize the [{}] permission data of the plugin", mPluginName);
+    logger.fatal("Failed to initialize the '{}' permission data of the plugin"_tr(mPluginName));
     return false;
 }
 

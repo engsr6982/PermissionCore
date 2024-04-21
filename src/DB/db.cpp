@@ -1,6 +1,7 @@
 #include "db.h"
 #include "PermissionCore/PermissionCore.h"
 #include "entry/Entry.h"
+#include "ll/api/i18n/I18n.h"
 #include <ll/api/data/KeyValueDB.h>
 #include <memory>
 #include <nlohmann/json.hpp>
@@ -12,6 +13,7 @@ namespace perm {
 
 using string = std::string;
 using json   = nlohmann::json;
+using ll::i18n_literals ::operator""_tr;
 
 json db::hashMapToJson(const std::unordered_map<std::string, group::Group>& hashMap) {
     json j;
@@ -41,7 +43,7 @@ void db::loadLevelDB() {
         const auto& dirLevelDB = mSelf.getPluginDir() / "LevelDB";
         mKVDB                  = std::make_unique<ll::data::KeyValueDB>(dirLevelDB);
     } catch (...) {
-        logger.fatal("Failed to load the permission group database");
+        logger.fatal("Failed to load the permission group database"_tr());
     }
 }
 std::unique_ptr<ll::data::KeyValueDB>& db::getDBInstance() { return mKVDB; }
@@ -65,7 +67,7 @@ bool db::initPluginData(string pluginName) {
         auto d = j.dump();
         return mKVDB->set(pluginName, d);
     } catch (...) {
-        logger.error("Failed to initialize plugin '{}' data", pluginName);
+        logger.error("Failed to initialize plugin '{}' data"_tr(pluginName));
         return false;
     }
 }
@@ -76,7 +78,7 @@ bool db::setPluginData(string pluginName, const std::unordered_map<std::string, 
         auto str = hashMapToJson(data).dump();
         return mKVDB->set(pluginName, str);
     } catch (...) {
-        logger.fatal("Failed to write plugin '{}' permission data to the database", pluginName);
+        logger.fatal("Failed to write plugin '{}' permission data to the database"_tr(pluginName));
         return false;
     }
 }
@@ -91,7 +93,7 @@ std::optional<std::unordered_map<std::string, group::Group>> db::getPluginData(s
         }
         return std::nullopt;
     } catch (...) {
-        logger.error("Failed to read plugin {} data from the database", pluginName);
+        logger.error("Failed to read plugin {} data from the database"_tr(pluginName));
         return std::nullopt;
     }
 }
