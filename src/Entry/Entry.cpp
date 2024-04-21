@@ -2,8 +2,10 @@
 
 #include <memory>
 
+#include "ll/api/i18n/I18n.h"
 #include "ll/api/plugin/NativePlugin.h"
 #include "ll/api/plugin/RegisterHelper.h"
+
 
 // my
 #include "Command/command.h"
@@ -18,7 +20,7 @@ entry& entry::getInstance() { return *instance; }
 bool entry::load() {
     getSelf().getLogger().info("Loading...");
 
-    ll::i18n::load(getSelf().getLangDir());
+    ll::i18n::load(mSelf.getLangDir());
     perm::db::getInstance().loadLevelDB();
 
     return true;

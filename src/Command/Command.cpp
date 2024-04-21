@@ -69,7 +69,7 @@ void registerCommand() {
         }
     }>();
 
-    // permc list perm <pluginName> [permValue] 列出插件所有权限值、列出插件的权限详细信息
+    // permc list perm [pluginName] [permValue] 列出插件所有权限值、列出插件的权限详细信息
     cmd.overload<ListPerm>()
         .text("list")
         .text("perm")
@@ -93,7 +93,7 @@ void registerCommand() {
                 plugins =
                     accumulate(all.begin(), all.end(), string(""), [](string a, string b) { return a + b + " "; });
                 output.success(
-                    "There are currently a total of the following plugins registered with permissions:"_tr(plugins)
+                    "There are currently a total of the following plugins registered with permissions: {}"_tr(plugins)
                 );
             } else if (param.permValue == -114514) {
                 auto all = registerInst.getAllPermission(param.pluginName);
@@ -152,18 +152,19 @@ void registerCommand() {
                 } else if (core.hasGroup(param.groupName)) {
                     auto group = core.getGroup(param.groupName);
                     output.success("Group: {}"_tr(group->toString(2)));
+                } else {
+                    output.error("The group '{}' is not registered"_tr(param.groupName));
                 }
             } else {
                 output.error("The plugin '{}' is not registered"_tr(param.pluginName.c_str()));
             }
         }>();
 
-    // permc list plugin [pluginName] 列出所有插件、列出插件详细信息
+    // permc list plugin 列出所有插件
     cmd.overload<ListPlugin>()
         .text("list")
         .text("plugin")
-        .optional("pluginName")
-        .execute<[&](CommandOrigin const& origin, CommandOutput& output, const ListPlugin& param) {
+        .execute<[&](CommandOrigin const& origin, CommandOutput& output) {
             CHECK_COMMAND_TYPE(
                 output,
                 origin.getOriginType(),
@@ -175,17 +176,14 @@ void registerCommand() {
                 if (!player.isOperator()) return noPermission(output);
             }
             PermissionManager& manager = PermissionManager::getInstance();
-            if (param.pluginName.empty()) {
-                auto keys = manager.getAllKeys();
-                if (keys.empty()) return output.success("No registered plugins.");
-                string plugins;
-                plugins =
-                    accumulate(keys.begin(), keys.end(), string(""), [](string a, string b) { return a + b + " "; });
-                output.success(
-                    "A total of the following plugins are currently registered with Permission Core:"_tr(plugins)
-                );
-                output.success("Total {} plugins registered.", keys.size());
-            }
+            auto               keys    = manager.getAllKeys();
+            if (keys.empty()) return output.success("No registered plugins."_tr());
+            string plugins;
+            plugins = accumulate(keys.begin(), keys.end(), string(""), [](string a, string b) { return a + b + " "; });
+            output.success(
+                "A total of the following plugins are currently registered with Permission Core: {}"_tr(plugins)
+            );
+            output.success("Total {} plugins registered.", keys.size());
         }>();
 
     // permc group <create|delete> <pluginName> <groupName> 添加、删除组
