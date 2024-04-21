@@ -24,6 +24,11 @@ target("PermissionCore") -- Change this to your plugin name.
         "/w45204"
     )
     add_defines("NOMINMAX", "UNICODE", "PERMISSION_CORE_API_EXPORT")
+
+    if is_mode("debug") then
+        add_defines("LL_I18N_COLLECT_STRINGS")
+    end
+
     add_files("src/**.cpp")
     add_includedirs("src", "include")
     add_packages("levilamina")
