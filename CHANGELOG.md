@@ -7,6 +7,17 @@
 
 ## [Unreleased]
 
+## [0.7.0] - 2024-4-21
+
+### Added
+
+- Add i18n support.
+
+### Changed
+
+- Update Plugin-template.
+- Refactor Command.
+
 ## [0.6.2] - 2024-4-16
 
 ### Fixed
