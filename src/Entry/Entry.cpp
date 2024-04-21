@@ -1,63 +1,41 @@
-#include "entry.h"
+#include "Entry.h"
 
-#include <ll/api/plugin/NativePlugin.h>
 #include <memory>
 
+#include "ll/api/plugin/NativePlugin.h"
+#include "ll/api/plugin/RegisterHelper.h"
+
 // my
-#include "Command/Command.h"
-#include "Form/Global.h"
-#include "db/db.h"
+#include "Command/command.h"
+#include "DB/db.h"
 
+namespace perm {
 
-namespace entry {
+static std::unique_ptr<entry> instance;
 
-entry::entry() = default;
+entry& entry::getInstance() { return *instance; }
 
-entry& entry::getInstance() {
-    static entry instance;
-    return instance;
-}
+bool entry::load() {
+    getSelf().getLogger().info("Loading...");
 
-ll::plugin::NativePlugin& entry::getSelf() const { return *mSelf; }
-
-extern "C" {
-_declspec(dllexport) bool ll_plugin_load(ll::plugin::NativePlugin& self) { return entry::getInstance().load(self); }
-
-_declspec(dllexport) bool ll_plugin_enable(ll::plugin::NativePlugin&) { return entry::getInstance().enable(); }
-
-_declspec(dllexport) bool ll_plugin_disable(ll::plugin::NativePlugin&) { return entry::getInstance().disable(); }
-
-/// @warning Unloading the plugin may cause a crash if the plugin has not released all of its
-/// resources. If you are unsure, keep this function commented out.
-// _declspec(dllexport) bool ll_plugin_unload(ll::plugin::NativePlugin&) { return entry::getInstance().unload(); }
-}
-
-
-bool entry::load(ll::plugin::NativePlugin& self) {
-    mSelf = std::addressof(self);
-    getSelf().getLogger().info("loading...");
-
-    // Code for loading the plugin goes here.
+    ll::i18n::load(getSelf().getLangDir());
     perm::db::getInstance().loadLevelDB();
 
     return true;
 }
 
 bool entry::enable() {
-    getSelf().getLogger().info("enabling...");
+    getSelf().getLogger().info("Enabling...");
 
-    // Code for enabling the plugin goes here.
     perm::command::registerCommand();
-
     return true;
 }
 
 bool entry::disable() {
-    getSelf().getLogger().info("disabling...");
-
-    // Code for disabling the plugin goes here.
-
+    getSelf().getLogger().info("Disabling...");
     return false;
 }
 
-} // namespace entry
+} // namespace perm
+
+LL_REGISTER_PLUGIN(perm::entry, perm::instance);
