@@ -59,7 +59,7 @@ void registerCommand() {
     auto  core = perm::PermissionManager::getInstance().getPermissionCore("PermissionCore");
 
     // permc 打开Gui
-    cmd.overload().execute<[&](CommandOrigin const& origin, CommandOutput& output) {
+    cmd.overload().execute([&](CommandOrigin const& origin, CommandOutput& output) {
         CHECK_COMMAND_TYPE(output, origin.getOriginType(), CommandOriginType::Player);
         Actor* entity = origin.getEntity();
         if (entity) {
@@ -67,7 +67,7 @@ void registerCommand() {
             if (player.isOperator()) perm::form::index(player);
             else noPermission(output);
         }
-    }>();
+    });
 
     // permc list perm [pluginName] [permValue] 列出插件所有权限值、列出插件的权限详细信息
     cmd.overload<ListPerm>()
@@ -75,7 +75,7 @@ void registerCommand() {
         .text("perm")
         .optional("pluginName")
         .optional("permValue")
-        .execute<[&](CommandOrigin const& origin, CommandOutput& output, const ListPerm& param) {
+        .execute([&](CommandOrigin const& origin, CommandOutput& output, const ListPerm& param) {
             CHECK_COMMAND_TYPE(
                 output,
                 origin.getOriginType(),
@@ -117,7 +117,7 @@ void registerCommand() {
                     output.error("The permission value '{}' is not registered"_tr(param.permValue));
                 }
             }
-        }>();
+        });
 
     // permc list group <pluginName> [groupName] 列出插件所有的组、列出插件的组详细信息
     cmd.overload<ListGroup>()
@@ -125,7 +125,7 @@ void registerCommand() {
         .text("group")
         .required("pluginName")
         .optional("groupName")
-        .execute<[&](CommandOrigin const& origin, CommandOutput& output, ListGroup const& param) {
+        .execute([&](CommandOrigin const& origin, CommandOutput& output, ListGroup const& param) {
             CHECK_COMMAND_TYPE(
                 output,
                 origin.getOriginType(),
@@ -158,33 +158,30 @@ void registerCommand() {
             } else {
                 output.error("The plugin '{}' is not registered"_tr(param.pluginName.c_str()));
             }
-        }>();
+        });
 
     // permc list plugin 列出所有插件
-    cmd.overload<ListPlugin>()
-        .text("list")
-        .text("plugin")
-        .execute<[&](CommandOrigin const& origin, CommandOutput& output) {
-            CHECK_COMMAND_TYPE(
-                output,
-                origin.getOriginType(),
-                CommandOriginType::Player,
-                CommandOriginType::DedicatedServer
-            );
-            if (origin.getOriginType() == CommandOriginType::Player) {
-                auto& player = *static_cast<Player*>(origin.getEntity()); // entity* => Player&
-                if (!player.isOperator()) return noPermission(output);
-            }
-            PermissionManager& manager = PermissionManager::getInstance();
-            auto               keys    = manager.getAllKeys();
-            if (keys.empty()) return output.success("No registered plugins."_tr());
-            string plugins;
-            plugins = accumulate(keys.begin(), keys.end(), string(""), [](string a, string b) { return a + b + " "; });
-            output.success(
-                "A total of the following plugins are currently registered with Permission Core: {}"_tr(plugins)
-            );
-            output.success("Total {} plugins registered.", keys.size());
-        }>();
+    cmd.overload<ListPlugin>().text("list").text("plugin").execute([&](CommandOrigin const& origin,
+                                                                       CommandOutput&       output) {
+        CHECK_COMMAND_TYPE(
+            output,
+            origin.getOriginType(),
+            CommandOriginType::Player,
+            CommandOriginType::DedicatedServer
+        );
+        if (origin.getOriginType() == CommandOriginType::Player) {
+            auto& player = *static_cast<Player*>(origin.getEntity()); // entity* => Player&
+            if (!player.isOperator()) return noPermission(output);
+        }
+        PermissionManager& manager = PermissionManager::getInstance();
+        auto               keys    = manager.getAllKeys();
+        if (keys.empty()) return output.success("No registered plugins."_tr());
+        string plugins;
+        plugins = accumulate(keys.begin(), keys.end(), string(""), [](string a, string b) { return a + b + " "; });
+        output.success("A total of the following plugins are currently registered with Permission Core: {}"_tr(plugins)
+        );
+        output.success("Total {} plugins registered.", keys.size());
+    });
 
     // permc group <create|delete> <pluginName> <groupName> 添加、删除组
     cmd.overload<CreatOrDeleteGroup>()
@@ -192,7 +189,7 @@ void registerCommand() {
         .required("c_or_d")
         .required("pluginName")
         .required("groupName")
-        .execute<[&](CommandOrigin const& origin, CommandOutput& output, CreatOrDeleteGroup const& param) {
+        .execute([&](CommandOrigin const& origin, CommandOutput& output, CreatOrDeleteGroup const& param) {
             CHECK_COMMAND_TYPE(
                 output,
                 origin.getOriginType(),
@@ -227,7 +224,7 @@ void registerCommand() {
             } else {
                 output.error("The plugin '{}' is not registered"_tr(param.pluginName.c_str()));
             }
-        }>();
+        });
 
     // permc user <add|del> <pluginName> <groupName> <target Player> 添加、删除用户到组
     cmd.overload<AddOrDelUserWithTarget>()
@@ -236,7 +233,7 @@ void registerCommand() {
         .required("pluginName")
         .required("groupName")
         .required("player")
-        .execute<[&](CommandOrigin const& origin, CommandOutput& output, AddOrDelUserWithTarget const& param) {
+        .execute([&](CommandOrigin const& origin, CommandOutput& output, AddOrDelUserWithTarget const& param) {
             CHECK_COMMAND_TYPE(
                 output,
                 origin.getOriginType(),
@@ -287,7 +284,7 @@ void registerCommand() {
             } else {
                 output.error("The target plugin '{}' is not registered"_tr(param.pluginName));
             }
-        }>();
+        });
 
     // permc user <add|del> <pluginName> <groupName> <string realName> 添加、删除用户到组
     cmd.overload<AddOrDelUserWithRealName>()
@@ -296,7 +293,7 @@ void registerCommand() {
         .required("pluginName")
         .required("groupName")
         .required("realName")
-        .execute<[&](CommandOrigin const& origin, CommandOutput& output, AddOrDelUserWithRealName const& param) {
+        .execute([&](CommandOrigin const& origin, CommandOutput& output, AddOrDelUserWithRealName const& param) {
             CHECK_COMMAND_TYPE(
                 output,
                 origin.getOriginType(),
@@ -345,7 +342,7 @@ void registerCommand() {
             } else {
                 output.error("The target plugin '{}' is not registered"_tr(param.pluginName));
             }
-        }>();
+        });
 
     // permc perm <add|del> <pluginName> <groupName> <value> 添加、删除权限到组
     cmd.overload<AddOrDelPermToGroup>()
@@ -354,7 +351,7 @@ void registerCommand() {
         .required("pluginName")
         .required("groupName")
         .required("permValue")
-        .execute<[&](CommandOrigin const& origin, CommandOutput& output, AddOrDelPermToGroup const& param) {
+        .execute([&](CommandOrigin const& origin, CommandOutput& output, AddOrDelPermToGroup const& param) {
             CHECK_COMMAND_TYPE(
                 output,
                 origin.getOriginType(),
@@ -403,6 +400,6 @@ void registerCommand() {
             } else {
                 output.error("The plugin '{}' is not registered"_tr(param.pluginName));
             }
-        }>();
+        });
 }
 } // namespace perm::command
