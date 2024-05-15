@@ -7,7 +7,7 @@
 #include <vector>
 
 
-namespace perm {
+namespace pmc {
 
 using string = std::string;
 
@@ -31,4 +31,4 @@ private:
     std::unordered_map<string, std::vector<group::Permission>> mRegisterData;
 };
 
-} // namespace perm
+} // namespace pmc

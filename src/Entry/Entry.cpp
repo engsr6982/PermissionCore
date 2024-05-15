@@ -8,10 +8,13 @@
 
 
 // my
+// #include "Backend/API.h"
 #include "Command/command.h"
+#include "Config/Config.h"
 #include "DB/db.h"
 
-namespace perm {
+
+namespace pmc {
 
 static std::unique_ptr<entry> instance;
 
@@ -21,7 +24,9 @@ bool entry::load() {
     getSelf().getLogger().info("Loading...");
 
     ll::i18n::load(mSelf.getLangDir());
-    perm::db::getInstance().loadLevelDB();
+    pmc::db::getInstance().loadLevelDB();
+
+    pmc::config::loadConfig();
 
     return true;
 }
@@ -29,15 +34,18 @@ bool entry::load() {
 bool entry::enable() {
     getSelf().getLogger().info("Enabling...");
 
-    perm::command::registerCommand();
+    pmc::command::registerCommand();
+
+    // pmc::backend::startServer();
+
     return true;
 }
 
 bool entry::disable() {
     getSelf().getLogger().info("Disabling...");
-    return false;
+    return true;
 }
 
-} // namespace perm
+} // namespace pmc
 
-LL_REGISTER_PLUGIN(perm::entry, perm::instance);
+LL_REGISTER_PLUGIN(pmc::entry, pmc::instance);

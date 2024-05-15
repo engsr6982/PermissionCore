@@ -33,7 +33,7 @@
 #include <sstream>
 
 
-namespace perm::command {
+namespace pmc::command {
 
 using string = std::string;
 using ll::i18n_literals ::operator""_tr;
@@ -112,4 +112,4 @@ inline string CommandOriginTypeToString(CommandOriginType type) {
         }                                                                                                              \
     }
 
-} // namespace perm::command
+} // namespace pmc::command

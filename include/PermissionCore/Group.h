@@ -11,7 +11,7 @@
 #include <vector>
 
 
-namespace perm::group {
+namespace pmc::group {
 
 using string = std::string;
 using json   = nlohmann::json;
@@ -157,4 +157,4 @@ struct PermExports Group {
     inline string toString(int indent) const { return toJson().dump(indent); }
 };
 
-} // namespace perm::group
+} // namespace pmc::group

@@ -5,7 +5,7 @@
 #include <unordered_map>
 #include <vector>
 
-namespace perm {
+namespace pmc {
 
 class PermExports PermissionManager {
 public:
@@ -26,4 +26,4 @@ private:
 
 PermExports void AutoRegisterCoreToManager(const std::string& pluginName);
 
-} // namespace perm
+} // namespace pmc

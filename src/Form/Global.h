@@ -1,6 +1,6 @@
 #include "mc/world/actor/player/Player.h"
 
-namespace perm::form {
+namespace pmc::form {
 
 void index(Player& player);
 

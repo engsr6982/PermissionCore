@@ -9,7 +9,7 @@
 #include <optional>
 
 
-namespace perm {
+namespace pmc {
 
 using string = std::string;
 using json   = nlohmann::json;
@@ -36,4 +36,4 @@ private:
     std::unique_ptr<ll::data::KeyValueDB> mKVDB;
 };
 
-} // namespace perm
+} // namespace pmc

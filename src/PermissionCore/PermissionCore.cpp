@@ -16,7 +16,7 @@
 #include <vector>
 
 
-namespace perm {
+namespace pmc {
 
 using json   = nlohmann::json;
 using string = std::string;
@@ -29,10 +29,10 @@ bool PermissionCore::loadPermDataFromDB() {
         logger.warn("Do not repeat the initialization"_tr());
         return true;
     }
-    if (!perm::db::getInstance().isPluginInit(mPluginName)) {
-        perm::db::getInstance().initPluginData(mPluginName);
+    if (!pmc::db::getInstance().isPluginInit(mPluginName)) {
+        pmc::db::getInstance().initPluginData(mPluginName);
     }
-    auto d = perm::db::getInstance().getPluginData(mPluginName);
+    auto d = pmc::db::getInstance().getPluginData(mPluginName);
     if (d) {
         mData = std::unique_ptr<std::unordered_map<std::string, group::Group>>(
             new std::unordered_map<std::string, group::Group>(*d)
@@ -44,7 +44,7 @@ bool PermissionCore::loadPermDataFromDB() {
     return false;
 }
 
-bool PermissionCore::setPermDataToDB() { return perm::db::getInstance().setPluginData(mPluginName, *mData); }
+bool PermissionCore::setPermDataToDB() { return pmc::db::getInstance().setPluginData(mPluginName, *mData); }
 
 PermissionCore::PermissionCore(const string pluginName) {
     mPluginName = pluginName;
@@ -294,4 +294,4 @@ bool PermissionCore::validateName(const string& groupName) {
 }
 bool PermissionCore::trySyncDataToDB() { return setPermDataToDB(); }
 
-} // namespace perm
+} // namespace pmc

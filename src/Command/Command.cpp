@@ -1,12 +1,12 @@
 #include "Command.h"
 
-namespace perm::command {
+namespace pmc::command {
 
 using string = std::string;
 using ll::i18n_literals ::operator""_tr;
-using PermissionCore     = perm::PermissionCore;
-using PermissionManager  = perm::PermissionManager;
-using PermissionRegister = perm::PermissionRegister;
+using PermissionCore     = pmc::PermissionCore;
+using PermissionManager  = pmc::PermissionManager;
+using PermissionRegister = pmc::PermissionRegister;
 
 void noPermission(CommandOutput& output) { output.error("This command is available to [OP] only!"_tr()); }
 
@@ -56,7 +56,7 @@ struct ListPlugin {
 
 void registerCommand() {
     auto& cmd  = ll::command::CommandRegistrar::getInstance().getOrCreateCommand("permc");
-    auto  core = perm::PermissionManager::getInstance().getPermissionCore("PermissionCore");
+    auto  core = pmc::PermissionManager::getInstance().getPermissionCore("PermissionCore");
 
     // permc 打开Gui
     cmd.overload().execute([&](CommandOrigin const& origin, CommandOutput& output) {
@@ -64,7 +64,7 @@ void registerCommand() {
         Actor* entity = origin.getEntity();
         if (entity) {
             auto& player = *static_cast<Player*>(entity); // entity* => Player&
-            if (player.isOperator()) perm::form::index(player);
+            if (player.isOperator()) pmc::form::index(player);
             else noPermission(output);
         }
     });
@@ -144,7 +144,7 @@ void registerCommand() {
                     if (allGroups.empty()) return output.success("No registered groups."_tr());
                     // vector to string example: "a b c"
                     string groups =
-                        accumulate(allGroups.begin(), allGroups.end(), string(""), [](string a, perm::group::Group& b) {
+                        accumulate(allGroups.begin(), allGroups.end(), string(""), [](string a, pmc::group::Group& b) {
                             return a + b.groupName + " ";
                         });
                     output.success("Group: {}"_tr(groups));
@@ -402,4 +402,4 @@ void registerCommand() {
             }
         });
 }
-} // namespace perm::command
+} // namespace pmc::command

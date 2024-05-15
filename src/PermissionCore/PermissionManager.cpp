@@ -3,7 +3,7 @@
 #include <vector>
 
 
-namespace perm {
+namespace pmc {
 
 using ll::i18n_literals ::operator""_tr;
 
@@ -64,4 +64,4 @@ void AutoRegisterCoreToManager(const std::string& pluginName) {
     }
 }
 
-} // namespace perm
+} // namespace pmc
