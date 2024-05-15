@@ -9,7 +9,7 @@
 #include <optional>
 
 
-namespace perm {
+namespace pmc {
 
 using string = std::string;
 using json   = nlohmann::json;
@@ -98,4 +98,4 @@ std::optional<std::unordered_map<std::string, group::Group>> db::getPluginData(s
     }
 }
 
-} // namespace perm
+} // namespace pmc

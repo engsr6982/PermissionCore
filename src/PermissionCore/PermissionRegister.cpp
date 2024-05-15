@@ -4,7 +4,7 @@
 #include <vector>
 
 
-namespace perm {
+namespace pmc {
 
 PermissionRegister& PermissionRegister::getInstance() {
     static PermissionRegister instance;
@@ -112,4 +112,4 @@ std::vector<string> PermissionRegister::getAllKeys() {
     return keys;
 }
 
-} // namespace perm
+} // namespace pmc

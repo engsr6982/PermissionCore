@@ -9,7 +9,7 @@
 #include <vector>
 
 
-namespace perm {
+namespace pmc {
 
 using string = std::string;
 
@@ -66,4 +66,4 @@ private:
     bool   setPermDataToDB();
 };
 
-} // namespace perm
+} // namespace pmc
