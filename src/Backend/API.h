@@ -1,68 +1,53 @@
-// #pragma once
-// #include "ll/api/Logger.h"
-// #include "nlohmann/json.hpp"
-// #include "string"
-// #include <ll/api/i18n/I18n.h>
-// #include <stdexcept>
-// #include <thread>
+#pragma once
+#include "APILogger.h"
+#include "Config/Config.h"
+#include "Date.h"
+#include "Entry/Entry.h"
+#include "PermissionCore/Group.h"
+#include "PermissionCore/PermissionCore.h"
+#include "PermissionCore/PermissionManager.h"
+#include "PermissionCore/PermissionRegister.h"
+#include "hv/HttpContext.h"
+#include "hv/HttpMessage.h"
+#include "hv/HttpServer.h"
+#include "hv/HttpService.h"
+#include "hv/http_content.h"
+#include "hv/httpdef.h"
+#include "ll/api/Logger.h"
+#include "nlohmann/json.hpp"
+#include "string"
+#include <filesystem>
+#include <functional>
+#include <ll/api/i18n/I18n.h>
+#include <memory>
+#include <stdexcept>
+#include <thread>
 
 
-// #include "Config/Config.h"
-// #include "Entry/Entry.h"
-// #include "PermissionCore/Group.h"
-// #include "PermissionCore/PermissionCore.h"
-// #include "PermissionCore/PermissionManager.h"
-// #include "PermissionCore/PermissionRegister.h"
-// #include "ServerLog.h"
+namespace pmc::backend {
 
+void startAPIServerThread();
 
-// namespace pmc::backend {
+#define CheckToken_RS(req, res, cfg)                                                                                   \
+    APILogger::log(req);                                                                                               \
+    if (req->GetHeader("Authorization") != "Bearer " + cfg.Token) {                                                    \
+        res->json["status"]  = 401;                                                                                    \
+        res->json["message"] = "Unauthorized";                                                                         \
+        return 401;                                                                                                    \
+    }                                                                                                                  \
+    res->json["status"]  = 200;                                                                                        \
+    res->json["message"] = "OK";                                                                                       \
+    return 200;
 
-// using string = std::string;
-// using ll::i18n_literals::operator""_tr;
-// using json = nlohmann::json;
+#define CheckToken_CTX(ctx, cfg)                                                                                       \
+    APILogger::log(ctx);                                                                                               \
+    string _token = ctx->header("Authorization");                                                                      \
+    if (_token != "Bearer " + cfg.Token) {                                                                             \
+        ctx->setStatus(http_status::HTTP_STATUS_UNAUTHORIZED);                                                         \
+        hv::Json _tres;                                                                                                \
+        _tres["status"]  = 401;                                                                                        \
+        _tres["message"] = "Unauthorized";                                                                             \
+        return ctx->sendJson(_tres);                                                                                   \
+    }
 
-// void startServer();
-
-// using fn = std::function<void(const httplib::Request&, httplib::Response&)>;
-
-// #ifdef DEBUG
-// #define DebugPrintRequest(req) \
-//     pmc::entry::getInstance().getSelf().getLogger().warn( \
-//         "[Request]: ", \
-//         ServerManager::getInstance().headersToString(req.headers) \
-//     );
-// #else
-// #define DebugPrintRequest(req) ;
-// #endif
-
-
-// #define AutoHandler(fn)                                                                                                \
-//     [](const httplib::Request& _req, httplib::Response& _res) {                                                        \
-//         DebugPrintRequest(_req);                                                                                       \
-//         pmc::entry::getInstance().getSelf().getLogger().warn("[" + _req.method + "] " + _req.path);                    \
-//         auto&        _manager = ServerManager::getInstance();                                                          \
-//         const string _reqTime = _manager.getCurrentTimeString();                                                       \
-//         try {                                                                                                          \
-//             auto _token = _req.get_header_value("Authorization");                                                      \
-//             if (_token.empty()) {                                                                                      \
-//                 _res.status = httplib::StatusCode::Unauthorized_401;                                                   \
-//                 _manager.writeHttpRequestLog(_req, _res, _reqTime);                                                    \
-//                 return;                                                                                                \
-//             }                                                                                                          \
-//             if (_token != pmc::config::cfg.network.token) {                                                            \
-//                 _res.status = httplib::StatusCode::Forbidden_403;                                                      \
-//                 _manager.writeHttpRequestLog(_req, _res, _reqTime);                                                    \
-//                 return;                                                                                                \
-//             }                                                                                                          \
-//             fn(_req, _res);                                                                                            \
-//             _manager.writeHttpRequestLog(_req, _res, _reqTime);                                                        \
-//         } catch (...) {                                                                                                \
-//             _res.status = httplib::StatusCode::InternalServerError_500;                                                \
-//             _manager.writeHttpRequestLog(_req, _res, _reqTime);                                                        \
-//             throw;                                                                                                     \
-//         }                                                                                                              \
-//     }
-
-
-// } // namespace pmc::backend
+} // namespace pmc::backend

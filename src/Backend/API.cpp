@@ -1,84 +1,61 @@
-// #pragma once
-// #include "API.h"
-// #include <functional>
-// #include <thread>
+#include "API.h"
+#include "fmt/compile.h"
+#include <filesystem>
+#include <fstream>
+#include <sstream>
+
+using string = std::string;
+using ll::i18n_literals::operator""_tr;
+using json   = nlohmann::json;
+namespace fs = std::filesystem;
 
 
-// namespace pmc::backend {
-
-// This function defined in the header file.
-// void startServer() {
-// auto& cfg = pmc::config::cfg.network;
-
-// #ifdef DEBUG
-//     std::cout << "[DBG] Config: " << std::endl;
-//     std::cout << "  Enable: " << cfg.enable << std::endl;
-//     std::cout << "  Listen IP: " << cfg.listenIP << std::endl;
-//     std::cout << "  Listen Port: " << cfg.listenPort << std::endl;
-//     std::cout << "  Allow CORS: " << cfg.allowCORS << std::endl;
-//     std::cout << "  Token: " << cfg.token << std::endl;
-// #endif
-
-// if (!cfg.enable) return;
+// 全局定义 HttpService 实例, 保证其生命周期与程序一致
+hv::HttpService router;
+hv::HttpServer  svr;
 
 
-// clang-format off
-    /*
-        TODO: We need find a good and header-only's C++ Http library.
-        The following libraries are excluded:
-            cpp-httplib
-            cinatra
-            drogon
-    */
-// clang-format on
+namespace pmc::backend {
 
 
-// Create server instance
-// auto& logger = pmc::entry::getInstance().getSelf().getLogger();
-// drogon::app()
-//     .setLogPath("./logs/PermissionCore/net")
-//     .setLogLevel(trantor::Logger::LogLevel::kInfo)
-//     .addListener(cfg.listenIP, cfg.listenPort)
-//     .setThreadNum(4)
-//     .enableRunAsDaemon();
+void startAPIServerThread() {
+    auto& cfg    = pmc::config::cfg.Network;
+    auto& logger = pmc::entry::getInstance().getSelf().getLogger();
+    if (!cfg.Enable) return;
+
+    // 注册路由
+    router.GET("/api/validate", [cfg](HttpRequest* req, HttpResponse* res) { CheckToken_RS(req, res, cfg); });
+
+    // Query => plugin/perm
+    router.GET("/api/query/{type}", [cfg](const HttpContextPtr& ctx) {
+        CheckToken_CTX(ctx, cfg);
+        string   type = ctx->param("type");
+        hv::Json res;
+        res["type"] = type;
+
+        // 查询指定类型数据
+        if (type == "plugin") {
+            res["data"] = pmc::PermissionManager::getInstance().getAllKeys();
+        } else if (type == "perm") {
+
+        } else {
+            res["status"]  = 400;
+            res["message"] = "Bad Request";
+        }
+        // 发送响应
+        return ctx->sendJson(res);
+    });
 
 
-// drogon::app().registerHandler(
-//     "/pmc/validate",
-//     [](const drogon::HttpRequestPtr& req, std::function<void(const drogon::HttpResponsePtr&)>&& callback) {
-//         string token = req->getHeader("Authorization");
-//         pmc::entry::getInstance().getSelf().getLogger().warn("Validate token: ", token);
-//         callback(drogon::HttpResponse::newHttpJsonResponse("hello world"));
-//     },
-//     {drogon::Get}
-// );
+    // 启动 HTTP 服务器
+    svr.port    = cfg.Port;
+    svr.service = &router;
+    svr.setThreadNum(4); // 分配4个线程处理请求
+    svr.start();
+    logger.info("Start api server on 127.0.0.1:{0}."_tr(cfg.Port));
+    if (cfg.Token == "default_token") {
+        logger.warn("Token is not set, please set it in config.toml."_tr());
+    }
+}
 
-
-// Set server routes
-// svr.set_http_handler<cinatra::GET>(
-//     "/pmc/validate",
-//     [](cinatra::request&, cinatra::response& res) {
-//         res.set_status_and_content(cinatra::status_type::ok, "Hello, world!");
-//     },
-//     mCORS{},
-//     mLog{},
-//     mAuth{}
-// );
-// svr.set_http_handler("/pmc/list/all/core", handler_ListCore);
-// svr.set_http_handler("/pmc/list/all/plugin", handler_ListPlugn));
-// svr.set_http_handler("/pmc/list/all/perm", handler_ListPerm);
-
-
-// Start server
-// logger.info("Try Start server on {}:{}."_tr(cfg.listenIP, cfg.listenPort));
-// std::thread([&svr]() {
-//     auto err = svr.sync_start();
-// pmc::entry::getInstance().getSelf().getLogger().error("Fail in \"sync_start\", code: ",
-// static_cast<int>(err));
-//     printf("Fail in \"sync_start\", code: %d\n", static_cast<int>(err));
-// }).detach();
-// svr.async_start();
-// drogon::app().run();
-// }
-
-// } // namespace pmc::backend
+} // namespace pmc::backend
