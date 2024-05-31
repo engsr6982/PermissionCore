@@ -23,6 +23,7 @@ void startAPIServerThread() {
     auto& cfg    = pmc::config::cfg.Network;
     auto& logger = pmc::entry::getInstance().getSelf().getLogger();
     if (!cfg.Enable) return;
+    if (cfg.AllowCORS) router.AllowCORS(); // 允许跨域请求
 
     // 注册路由
     router.GET("/api/validate", [cfg](HttpRequest* req, HttpResponse* res) { CheckToken_RS(req, res, cfg); });
@@ -43,6 +44,19 @@ void startAPIServerThread() {
             res["data"] = pm.getAllKeys();
         } else if (type == "perm") {
             auto pem = pmc::PermissionRegister::getInstance();
+            if (pem.hasPlugin(plugin)) {
+                nlohmann::json j = nlohmann::json::array();
+                for (auto& p : pem.getPermissions(plugin)) {
+                    nlohmann::json j2;
+                    j2["name"]  = p.name;
+                    j2["value"] = p.value;
+                    j.push_back(j2);
+                }
+                res["data"] = j;
+            } else {
+                code    = 404;
+                message = "Not Found";
+            }
         } else if (type == "group") {
             if (pm.hasRegisterPermissionCore(plugin)) {
                 nlohmann::json j = nlohmann::json::array();
