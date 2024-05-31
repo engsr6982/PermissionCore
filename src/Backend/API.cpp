@@ -1,5 +1,6 @@
 #include "API.h"
 #include "fmt/compile.h"
+#include "hv/json.hpp"
 #include <filesystem>
 #include <fstream>
 #include <sstream>
@@ -26,22 +27,43 @@ void startAPIServerThread() {
     // 注册路由
     router.GET("/api/validate", [cfg](HttpRequest* req, HttpResponse* res) { CheckToken_RS(req, res, cfg); });
 
-    // Query => plugin/perm
-    router.GET("/api/query/{type}", [cfg](const HttpContextPtr& ctx) {
+    // Query => plugin/perm/group
+    router.GET("/api/query", [cfg](const HttpContextPtr& ctx) {
         CheckToken_CTX(ctx, cfg);
-        string   type = ctx->param("type");
+        auto&  pm     = pmc::PermissionManager::getInstance();
+        string type   = ctx->param("type");
+        string plugin = ctx->param("plugin");
+
         hv::Json res;
-        res["type"] = type;
+        int      code    = 200;
+        string   message = "OK";
 
         // 查询指定类型数据
         if (type == "plugin") {
-            res["data"] = pmc::PermissionManager::getInstance().getAllKeys();
+            res["data"] = pm.getAllKeys();
         } else if (type == "perm") {
-
+            auto pem = pmc::PermissionRegister::getInstance();
+        } else if (type == "group") {
+            if (pm.hasRegisterPermissionCore(plugin)) {
+                nlohmann::json j = nlohmann::json::array();
+                // 遍历vector
+                for (auto g : pm.getPermissionCore(plugin)->getAllGroups()) {
+                    j.push_back(g.toJson());
+                }
+                res["data"] = j;
+            } else {
+                code    = 404;
+                message = "Not Found";
+            }
         } else {
-            res["status"]  = 400;
-            res["message"] = "Bad Request";
+            code    = 400;
+            message = "Bad Request";
         }
+        // 设置成功状态码和消息
+        res["type"]    = type;
+        res["plugin"]  = plugin;
+        res["status"]  = code;
+        res["message"] = message;
         // 发送响应
         return ctx->sendJson(res);
     });
@@ -54,7 +76,7 @@ void startAPIServerThread() {
     svr.start();
     logger.info("Start api server on 127.0.0.1:{0}."_tr(cfg.Port));
     if (cfg.Token == "default_token") {
-        logger.warn("Token is not set, please set it in config.toml."_tr());
+        logger.warn("Please don't use default token in production environment."_tr());
     }
 }
 

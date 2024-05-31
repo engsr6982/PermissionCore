@@ -43,11 +43,22 @@ bool PermissionManager::unregisterPermissionCore(const std::string& pluginName) 
     return false;
 }
 
-bool PermissionManager::hasRegisterPermissionCore(const std::string& pluginName) {
+bool PermissionManager::hasRegisterPermissionCore(const std::string& pluginName) { // deprecated
+    return permissionCores.find(pluginName) != permissionCores.end();
+}
+bool PermissionManager::hasPermissionCore(const std::string& pluginName) {
     return permissionCores.find(pluginName) != permissionCores.end();
 }
 
-std::vector<string> PermissionManager::getAllKeys() {
+
+std::vector<string> PermissionManager::getAllKeys() { // deprecated
+    std::vector<string> keys;
+    for (const auto& pair : permissionCores) {
+        keys.push_back(pair.first);
+    }
+    return keys;
+}
+std::vector<string> PermissionManager::getAllPluginNames() {
     std::vector<string> keys;
     for (const auto& pair : permissionCores) {
         keys.push_back(pair.first);
@@ -58,7 +69,7 @@ std::vector<string> PermissionManager::getAllKeys() {
 void AutoRegisterCoreToManager(const std::string& pluginName) {
     auto __TryRegisterCore = std::make_shared<PermissionCore>(pluginName);
     bool __TryRegisterToManager =
-        PermissionManager::getInstance().registerPermissionCore(pluginName, __TryRegisterCore);
+        PermissionManager::getInstance().registerPermissionCore(std::string(pluginName), __TryRegisterCore);
     if (!__TryRegisterToManager) {
         throw std::runtime_error("Plugin registration failed: '{}'"_tr(pluginName));
     }

@@ -33,7 +33,7 @@ struct AddOrDelPermToGroup {
     int               permValue;
 };
 
-enum CreatOrDelete : int { Creat = 1, Delete = 0 };
+enum CreatOrDelete : int { Create = 1, Delete = 0 };
 struct CreatOrDeleteGroup {
     CreatOrDelete c_or_d;
     string        pluginName;
@@ -55,10 +55,10 @@ struct ListPlugin {
 };
 
 void registerCommand() {
-    auto& cmd  = ll::command::CommandRegistrar::getInstance().getOrCreateCommand("permc");
+    auto& cmd  = ll::command::CommandRegistrar::getInstance().getOrCreateCommand("pmc");
     auto  core = pmc::PermissionManager::getInstance().getPermissionCore("PermissionCore");
 
-    // permc 打开Gui
+    // pmc 打开Gui
     cmd.overload().execute([&](CommandOrigin const& origin, CommandOutput& output) {
         CHECK_COMMAND_TYPE(output, origin.getOriginType(), CommandOriginType::Player);
         Actor* entity = origin.getEntity();
@@ -69,7 +69,7 @@ void registerCommand() {
         }
     });
 
-    // permc list perm [pluginName] [permValue] 列出插件所有权限值、列出插件的权限详细信息
+    // pmc list perm [pluginName] [permValue] 列出插件所有权限值、列出插件的权限详细信息
     cmd.overload<ListPerm>()
         .text("list")
         .text("perm")
@@ -119,7 +119,7 @@ void registerCommand() {
             }
         });
 
-    // permc list group <pluginName> [groupName] 列出插件所有的组、列出插件的组详细信息
+    // pmc list group <pluginName> [groupName] 列出插件所有的组、列出插件的组详细信息
     cmd.overload<ListGroup>()
         .text("list")
         .text("group")
@@ -137,7 +137,7 @@ void registerCommand() {
                 if (!player.isOperator()) return noPermission(output);
             }
             PermissionManager& manager = PermissionManager::getInstance();
-            if (manager.hasRegisterPermissionCore(param.pluginName)) {
+            if (manager.hasPermissionCore(param.pluginName)) {
                 PermissionCore& core = *manager.getPermissionCore(param.pluginName);
                 if (param.groupName.empty()) {
                     auto allGroups = core.getAllGroups();
@@ -160,7 +160,7 @@ void registerCommand() {
             }
         });
 
-    // permc list plugin 列出所有插件
+    // pmc list plugin 列出所有插件
     cmd.overload<ListPlugin>().text("list").text("plugin").execute([&](CommandOrigin const& origin,
                                                                        CommandOutput&       output) {
         CHECK_COMMAND_TYPE(
@@ -183,7 +183,7 @@ void registerCommand() {
         output.success("Total {} plugins registered.", keys.size());
     });
 
-    // permc group <create|delete> <pluginName> <groupName> 添加、删除组
+    // pmc group <create|delete> <pluginName> <groupName> 添加、删除组
     cmd.overload<CreatOrDeleteGroup>()
         .text("group")
         .required("c_or_d")
@@ -201,10 +201,10 @@ void registerCommand() {
                 if (!player.isOperator()) return noPermission(output);
             }
             PermissionManager& manager = PermissionManager::getInstance();
-            if (manager.hasRegisterPermissionCore(param.pluginName)) {
+            if (manager.hasPermissionCore(param.pluginName)) {
                 PermissionCore& core = *manager.getPermissionCore(param.pluginName);
                 switch (param.c_or_d) {
-                case CreatOrDelete::Creat: {
+                case CreatOrDelete::Create: {
                     bool status = core.createGroup(param.groupName);
                     output.success("Add group '{}' in plugin '{}' state '{}'"_tr(
                         param.groupName,
@@ -226,7 +226,7 @@ void registerCommand() {
             }
         });
 
-    // permc user <add|del> <pluginName> <groupName> <target Player> 添加、删除用户到组
+    // pmc user <add|del> <pluginName> <groupName> <target Player> 添加、删除用户到组
     cmd.overload<AddOrDelUserWithTarget>()
         .text("user")
         .required("add_del")
@@ -247,7 +247,7 @@ void registerCommand() {
             }
             // processing...
             PermissionManager& manager = PermissionManager::getInstance();
-            if (manager.hasRegisterPermissionCore(param.pluginName)) {
+            if (manager.hasPermissionCore(param.pluginName)) {
                 PermissionCore& core = *manager.getPermissionCore(param.pluginName);
 
                 if (core.hasGroup(param.groupName)) {
@@ -286,7 +286,7 @@ void registerCommand() {
             }
         });
 
-    // permc user <add|del> <pluginName> <groupName> <string realName> 添加、删除用户到组
+    // pmc user <add|del> <pluginName> <groupName> <string realName> 添加、删除用户到组
     cmd.overload<AddOrDelUserWithRealName>()
         .text("user")
         .required("add_del")
@@ -307,7 +307,7 @@ void registerCommand() {
             }
             // processing...
             PermissionManager& manager = PermissionManager::getInstance();
-            if (manager.hasRegisterPermissionCore(param.pluginName)) {
+            if (manager.hasPermissionCore(param.pluginName)) {
                 PermissionCore& core = *manager.getPermissionCore(param.pluginName);
                 if (core.hasGroup(param.groupName)) {
                     auto pl = ll::service::getLevel()->getPlayer(param.realName);
@@ -344,7 +344,7 @@ void registerCommand() {
             }
         });
 
-    // permc perm <add|del> <pluginName> <groupName> <value> 添加、删除权限到组
+    // pmc perm <add|del> <pluginName> <groupName> <value> 添加、删除权限到组
     cmd.overload<AddOrDelPermToGroup>()
         .text("perm")
         .required("add_del")
@@ -365,11 +365,11 @@ void registerCommand() {
             }
             // processing...
             PermissionManager& manager = PermissionManager::getInstance();
-            if (manager.hasRegisterPermissionCore(param.pluginName)) {
+            if (manager.hasPermissionCore(param.pluginName)) {
                 PermissionCore& core = *manager.getPermissionCore(param.pluginName);
                 if (core.hasGroup(param.groupName)) {
                     PermissionRegister registerInst = PermissionRegister::getInstance();
-                    if (registerInst.hasPermissionRegisted(param.pluginName, param.permValue)) {
+                    if (registerInst.hasPermission(param.pluginName, param.permValue)) {
                         auto perm = registerInst.getPermission(param.pluginName, param.permValue);
                         switch (param.add_del) {
                         case OperationAddOrDel::add: {
