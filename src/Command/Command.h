@@ -1,5 +1,5 @@
 #pragma once
-#include "Form/Global.h"
+#include "Form/index.h"
 #include "PermissionCore/PermissionManager.h"
 #include "PermissionCore/PermissionRegister.h"
 #include "ll/api/i18n/I18n.h"

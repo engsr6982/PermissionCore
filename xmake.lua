@@ -6,8 +6,7 @@ add_repositories("liteldev-repo https://github.com/LiteLDev/xmake-repo.git")
 -- add_requires("levilamina develop") to use develop version
 -- please note that you should add bdslibrary yourself if using dev version
 add_requires(
-    "levilamina 0.12.3",
-    "libhv 1.3.2"
+    "levilamina 0.12.3"
 )
 
 if not has_config("vs_runtime") then
@@ -32,9 +31,9 @@ target("PermissionCore") -- Change this to your plugin name.
         add_defines("LL_I18N_COLLECT_STRINGS", "DEBUG")
     end
 
-    add_files("src/**.cpp", "src/**.cc")
+    add_files("src/**.cpp")
     add_includedirs("src", "include")
-    add_packages("levilamina", "libhv")
+    add_packages("levilamina")
     add_shflags("/DELAYLOAD:bedrock_server.dll") -- To use symbols provided by SymbolProvider.
     set_exceptions("none") -- To avoid conflicts with /EHa.
     set_kind("shared")

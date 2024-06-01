@@ -88,7 +88,7 @@ void registerCommand() {
             }
             PermissionRegister& registerInst = PermissionRegister::getInstance();
             if (param.pluginName.empty()) {
-                auto   all = registerInst.getAllKeys();
+                auto   all = registerInst.getAllPluginNames();
                 string plugins;
                 plugins =
                     accumulate(all.begin(), all.end(), string(""), [](string a, string b) { return a + b + " "; });
@@ -96,7 +96,7 @@ void registerCommand() {
                     "There are currently a total of the following plugins registered with permissions: {}"_tr(plugins)
                 );
             } else if (param.permValue == -114514) {
-                auto all = registerInst.getAllPermission(param.pluginName);
+                auto all = registerInst.getPermissions(param.pluginName);
                 for (auto& perm : all) {
                     output.success("PermissionName: {} | PermissionValue: {} | With Plugin: {}"_tr(
                         perm.name,
@@ -174,7 +174,7 @@ void registerCommand() {
             if (!player.isOperator()) return noPermission(output);
         }
         PermissionManager& manager = PermissionManager::getInstance();
-        auto               keys    = manager.getAllKeys();
+        auto               keys    = manager.getAllPluginNames();
         if (keys.empty()) return output.success("No registered plugins."_tr());
         string plugins;
         plugins = accumulate(keys.begin(), keys.end(), string(""), [](string a, string b) { return a + b + " "; });

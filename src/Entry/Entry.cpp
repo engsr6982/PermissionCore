@@ -8,7 +8,6 @@
 
 
 // my
-#include "Backend/API.h"
 #include "Command/command.h"
 #include "Config/Config.h"
 #include "DB/db.h"
@@ -35,8 +34,6 @@ bool entry::enable() {
     getSelf().getLogger().info("Enabling...");
 
     pmc::command::registerCommand();
-
-    pmc::backend::startAPIServerThread();
 
     return true;
 }
