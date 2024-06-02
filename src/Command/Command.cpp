@@ -56,9 +56,8 @@ struct ListPlugin {
 };
 
 void registerCommand() {
-    auto& cmd = ll::command::CommandRegistrar::getInstance()
-                    .getOrCreateCommand("pmc", "PermissionCore", CommandPermissionLevel::Admin);
-    auto core = pmc::PermissionManager::getInstance().getPermissionCore("PermissionCore");
+    auto& cmd  = ll::command::CommandRegistrar::getInstance().getOrCreateCommand("pmc", "PermissionCore");
+    auto  core = pmc::PermissionManager::getInstance().getPermissionCore("PermissionCore");
 
     // pmc 打开Gui
     cmd.overload().execute([&](CommandOrigin const& origin, CommandOutput& output) {
