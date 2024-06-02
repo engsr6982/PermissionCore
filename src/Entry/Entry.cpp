@@ -9,7 +9,6 @@
 
 // my
 #include "Command/command.h"
-#include "Config/Config.h"
 #include "DB/db.h"
 
 
@@ -24,8 +23,6 @@ bool entry::load() {
 
     ll::i18n::load(mSelf.getLangDir());
     pmc::db::getInstance().loadLevelDB();
-
-    pmc::config::loadConfig();
 
     return true;
 }

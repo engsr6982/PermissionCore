@@ -1,4 +1,5 @@
 #include "Command.h"
+#include "mc/server/commands/CommandPermissionLevel.h"
 
 namespace pmc::command {
 
@@ -8,7 +9,7 @@ using PermissionCore     = pmc::PermissionCore;
 using PermissionManager  = pmc::PermissionManager;
 using PermissionRegister = pmc::PermissionRegister;
 
-void noPermission(CommandOutput& output) { output.error("This command is available to [OP] only!"_tr()); }
+void noPermission(CommandOutput& output) { output.error("此命令仅限 \"OP\" 使用。"_tr()); }
 
 enum OperationAddOrDel : int { add = 0, del = 1 };
 enum OperationUserOrPerm : int { user = 0, perm = 1 };
@@ -55,8 +56,9 @@ struct ListPlugin {
 };
 
 void registerCommand() {
-    auto& cmd  = ll::command::CommandRegistrar::getInstance().getOrCreateCommand("pmc");
-    auto  core = pmc::PermissionManager::getInstance().getPermissionCore("PermissionCore");
+    auto& cmd = ll::command::CommandRegistrar::getInstance()
+                    .getOrCreateCommand("pmc", "PermissionCore", CommandPermissionLevel::Admin);
+    auto core = pmc::PermissionManager::getInstance().getPermissionCore("PermissionCore");
 
     // pmc 打开Gui
     cmd.overload().execute([&](CommandOrigin const& origin, CommandOutput& output) {
@@ -87,34 +89,34 @@ void registerCommand() {
                 if (!player.isOperator()) return noPermission(output);
             }
             PermissionRegister& registerInst = PermissionRegister::getInstance();
+
+            // 列出所有插件
             if (param.pluginName.empty()) {
                 auto   all = registerInst.getAllPluginNames();
                 string plugins;
                 plugins =
                     accumulate(all.begin(), all.end(), string(""), [](string a, string b) { return a + b + " "; });
-                output.success(
-                    "There are currently a total of the following plugins registered with permissions: {}"_tr(plugins)
-                );
-            } else if (param.permValue == -114514) {
+                output.success("当前共有以下插件注册了权限: {0}"_tr(plugins));
+
+                // 列出指定插件的权限
+            } else if (!param.pluginName.empty() && param.permValue == -114514) {
                 auto all = registerInst.getPermissions(param.pluginName);
                 for (auto& perm : all) {
-                    output.success("PermissionName: {} | PermissionValue: {} | With Plugin: {}"_tr(
-                        perm.name,
-                        perm.value,
-                        param.pluginName
-                    ));
+                    output.success(
+                        "权限名: {0} | 权限值: {1} | 所属插件: {2}"_tr(perm.name, perm.value, param.pluginName)
+                    );
                 }
-                output.success("Total {} permissions registered."_tr(all.size()));
+                output.success("共计 '{0}' 个权限。"_tr(all.size()));
+
+                // 列出指定插件的指定权限
             } else {
                 auto perm = registerInst.getPermission(param.pluginName, param.permValue);
                 if (perm.has_value()) {
-                    output.success("PermissionName: {} | PermissionValue: {} | With Plugin: {}"_tr(
-                        perm->name,
-                        perm->value,
-                        param.pluginName
-                    ));
+                    output.success(
+                        "权限名: {0} | 权限值: {1} | 所属插件: {2}"_tr(perm->name, perm->value, param.pluginName)
+                    );
                 } else {
-                    output.error("The permission value '{}' is not registered"_tr(param.permValue));
+                    output.error("权限值: {0} 不存在。"_tr(param.permValue));
                 }
             }
         });
@@ -141,22 +143,22 @@ void registerCommand() {
                 PermissionCore& core = *manager.getPermissionCore(param.pluginName);
                 if (param.groupName.empty()) {
                     auto allGroups = core.getAllGroups();
-                    if (allGroups.empty()) return output.success("No registered groups."_tr());
+                    if (allGroups.empty()) return output.error("当前插件没有任何组。"_tr());
                     // vector to string example: "a b c"
                     string groups =
                         accumulate(allGroups.begin(), allGroups.end(), string(""), [](string a, pmc::group::Group& b) {
                             return a + b.groupName + " ";
                         });
-                    output.success("Group: {}"_tr(groups));
-                    output.success("Total {} groups registered."_tr(allGroups.size()));
+                    output.success("当前插件共有以下组: {0}"_tr(groups));
+                    output.success("共计 '{0}' 个组。"_tr(allGroups.size()));
                 } else if (core.hasGroup(param.groupName)) {
                     auto group = core.getGroup(param.groupName);
-                    output.success("Group: {}"_tr(group->toString(2)));
+                    output.success("组 {0} 的详细信息: {1}"_tr(group->groupName, group->toString(2)));
                 } else {
-                    output.error("The group '{}' is not registered"_tr(param.groupName));
+                    output.error("组 {0} 不存在。"_tr(param.groupName));
                 }
             } else {
-                output.error("The plugin '{}' is not registered"_tr(param.pluginName.c_str()));
+                output.error("插件 {0} 不存在。"_tr(param.pluginName.c_str()));
             }
         });
 
@@ -175,12 +177,11 @@ void registerCommand() {
         }
         PermissionManager& manager = PermissionManager::getInstance();
         auto               keys    = manager.getAllPluginNames();
-        if (keys.empty()) return output.success("No registered plugins."_tr());
+        if (keys.empty()) return output.success("当前没有任何插件注册权限核心。"_tr());
         string plugins;
         plugins = accumulate(keys.begin(), keys.end(), string(""), [](string a, string b) { return a + b + " "; });
-        output.success("A total of the following plugins are currently registered with Permission Core: {}"_tr(plugins)
-        );
-        output.success("Total {} plugins registered.", keys.size());
+        output.success("当前共有以下插件注册了权限核心: {0}"_tr(plugins));
+        output.success("共计 '{0}' 个插件。", keys.size());
     });
 
     // pmc group <create|delete> <pluginName> <groupName> 添加、删除组
@@ -206,23 +207,17 @@ void registerCommand() {
                 switch (param.c_or_d) {
                 case CreatOrDelete::Create: {
                     bool status = core.createGroup(param.groupName);
-                    output.success("Add group '{}' in plugin '{}' state '{}'"_tr(
-                        param.groupName,
-                        param.pluginName,
-                        status ? "Success"_tr() : "Fail"_tr()
-                    ));
+                    if (status) output.success("成功为插件 '{0}' 创建组 '{1}'。"_tr(param.groupName, param.pluginName));
+                    else output.error("为插件 '{0}' 创建组 '{1}' 失败。"_tr(param.groupName, param.pluginName));
                 } break;
                 case CreatOrDelete::Delete: {
                     bool status = core.deleteGroup(param.groupName);
-                    output.success("Delete group '{}' in plugin '{}' state '{}'"_tr(
-                        param.groupName,
-                        param.pluginName,
-                        status ? "Success"_tr() : "Fail"_tr()
-                    ));
+                    if (status) output.success("成功从插件 '{0}' 删除组 '{1}'"_tr(param.groupName, param.pluginName));
+                    else output.error("无法从插件 '{0}' 删除组 '{1}'"_tr(param.groupName, param.pluginName));
                 } break;
                 }
             } else {
-                output.error("The plugin '{}' is not registered"_tr(param.pluginName.c_str()));
+                output.error("插件 {0} 不存在。"_tr(param.pluginName.c_str()));
             }
         });
 
@@ -259,30 +254,42 @@ void registerCommand() {
                             switch (param.add_del) {
                             case OperationAddOrDel::add: {
                                 bool status = core.addUserToGroup(param.groupName, pl->getRealName(), uuid);
-                                output.success("Add user '{}' to group '{}' in plugin '{}' state '{}'"_tr(
-                                    pl->getRealName(),
-                                    param.groupName,
-                                    param.pluginName,
-                                    status ? "Success"_tr() : "Fail"_tr()
-                                ));
+                                if (status)
+                                    output.success("成功将用户 '{0}' 添加到插件 '{1}' 的组 '{2}' 中。"_tr(
+                                        pl->getRealName(),
+                                        param.pluginName,
+                                        param.groupName
+                                    ));
+                                else
+                                    output.error("无法将用户 '{0}' 添加到插件 '{1}' 的组 '{2}' 中。"_tr(
+                                        pl->getRealName(),
+                                        param.pluginName,
+                                        param.groupName
+                                    ));
                             } break;
                             case OperationAddOrDel::del: {
                                 bool status = core.removeUserToGroup(param.groupName, uuid);
-                                output.success("Remove user '{}' to group '{}' in plugin '{}' state '{}'"_tr(
-                                    pl->getRealName(),
-                                    param.groupName,
-                                    param.pluginName,
-                                    status ? "Success"_tr() : "Fail"_tr()
-                                ));
+                                if (status)
+                                    output.success("成功将用户 '{0}' 从插件 '{1}' 的组 '{2}' 中移除。"_tr(
+                                        pl->getRealName(),
+                                        param.pluginName,
+                                        param.groupName
+                                    ));
+                                else
+                                    output.error("无法将用户 '{0}' 从插件 '{1}' 的组 '{2}' 中移除。"_tr(
+                                        pl->getRealName(),
+                                        param.pluginName,
+                                        param.groupName
+                                    ));
                             } break;
                             }
                         }
                     }
                 } else {
-                    output.error("The group '{}' is not registered"_tr(param.groupName));
+                    output.error("组 {0} 不存在。"_tr(param.groupName));
                 }
             } else {
-                output.error("The target plugin '{}' is not registered"_tr(param.pluginName));
+                output.error("插件 {0} 不存在。"_tr(param.pluginName));
             }
         });
 
@@ -316,31 +323,43 @@ void registerCommand() {
                         case OperationAddOrDel::add: {
                             bool status =
                                 core.addUserToGroup(param.groupName, param.realName, pl->getUuid().asString().c_str());
-                            output.success("Add user '{}' to group '{}' in plugin '{}' state '{}'"_tr(
-                                param.realName,
-                                param.groupName,
-                                param.pluginName,
-                                status ? "Success"_tr() : "Fail"_tr()
-                            ));
+                            if (status)
+                                output.success("成功将用户 '{0}' 添加到插件 '{1}' 的组 '{2}' 中。"_tr(
+                                    pl->getRealName(),
+                                    param.pluginName,
+                                    param.groupName
+                                ));
+                            else
+                                output.error("无法将用户 '{0}' 添加到插件 '{1}' 的组 '{2}' 中。"_tr(
+                                    pl->getRealName(),
+                                    param.pluginName,
+                                    param.groupName
+                                ));
                         } break;
                         case OperationAddOrDel::del: {
                             bool status = core.removeUserToGroup(param.groupName, pl->getUuid().asString().c_str());
-                            output.success("Remove user '{}' to group '{}' in plugin '{}' state '{}'"_tr(
-                                param.realName,
-                                param.groupName,
-                                param.pluginName,
-                                status ? "Success"_tr() : "Fail"_tr()
-                            ));
+                            if (status)
+                                output.success("成功将用户 '{0}' 从插件 '{1}' 的组 '{2}' 中移除。"_tr(
+                                    pl->getRealName(),
+                                    param.pluginName,
+                                    param.groupName
+                                ));
+                            else
+                                output.error("无法将用户 '{0}' 从插件 '{1}' 的组 '{2}' 中移除。"_tr(
+                                    pl->getRealName(),
+                                    param.pluginName,
+                                    param.groupName
+                                ));
                         } break;
                         }
                     } else {
-                        output.error("The player '{}' is not found"_tr(param.realName));
+                        output.error("玩家 {0} 不存在。"_tr(param.realName));
                     }
                 } else {
-                    output.error("The group '{}' is not registered"_tr(param.groupName));
+                    output.error("组 {0} 不存在。"_tr(param.groupName));
                 }
             } else {
-                output.error("The target plugin '{}' is not registered"_tr(param.pluginName));
+                output.error("插件 {0} 不存在。"_tr(param.pluginName));
             }
         });
 
@@ -374,31 +393,43 @@ void registerCommand() {
                         switch (param.add_del) {
                         case OperationAddOrDel::add: {
                             bool status = core.addPermissionToGroup(param.groupName, perm->name, perm->value);
-                            output.success("Add permission '{}' to group '{}' in plugin '{}' state '{}'"_tr(
-                                perm->name,
-                                param.groupName,
-                                param.pluginName,
-                                status ? "Success"_tr() : "Fail"_tr()
-                            ));
+                            if (status)
+                                output.success("添加权限 '{0}' 到插件 '{1}' 的组 '{2}' 成功。"_tr(
+                                    perm->name,
+                                    param.pluginName,
+                                    param.groupName
+                                ));
+                            else
+                                output.error("添加权限 '{0}' 到插件 '{1}' 的组 '{2}' 失败。"_tr(
+                                    perm->name,
+                                    param.pluginName,
+                                    param.groupName
+                                ));
                         } break;
                         case OperationAddOrDel::del: {
                             bool status = core.removePermissionToGroup(param.groupName, perm->value);
-                            output.success("Remove permission '{}' to group '{}' in plugin '{}' state '{}'"_tr(
-                                perm->name,
-                                param.groupName,
-                                param.pluginName,
-                                status ? "Success"_tr() : "Fail"_tr()
-                            ));
+                            if (status)
+                                output.success("删除权限 '{0}' 到插件 '{1}' 的组 '{2}' 成功。"_tr(
+                                    perm->name,
+                                    param.pluginName,
+                                    param.groupName
+                                ));
+                            else
+                                output.error("删除权限 '{0}' 到插件 '{1}' 的组 '{2}' 失败。"_tr(
+                                    perm->name,
+                                    param.pluginName,
+                                    param.groupName
+                                ));
                         }
                         }
                     } else {
-                        output.error("The permission '{}' is not registered"_tr(param.permValue));
+                        output.error("权限值 {0} 不存在。"_tr(param.permValue));
                     }
                 } else {
-                    output.error("The group '{}' is not registered"_tr(param.groupName));
+                    output.error("组 {0} 不存在。"_tr(param.groupName));
                 }
             } else {
-                output.error("The plugin '{}' is not registered"_tr(param.pluginName));
+                output.error("插件 {0} 不存在。"_tr(param.pluginName));
             }
         });
 }

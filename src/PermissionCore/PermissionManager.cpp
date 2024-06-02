@@ -71,7 +71,7 @@ void AutoRegisterCoreToManager(const std::string& pluginName) {
     bool __TryRegisterToManager =
         PermissionManager::getInstance().registerPermissionCore(std::string(pluginName), __TryRegisterCore);
     if (!__TryRegisterToManager) {
-        throw std::runtime_error("Plugin registration failed: '{}'"_tr(pluginName));
+        throw std::runtime_error("注册权限核心到权限管理器失败, 错误插件名: {0}"_tr(pluginName));
     }
 }
 

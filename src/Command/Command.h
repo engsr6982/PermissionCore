@@ -40,50 +40,40 @@ using ll::i18n_literals ::operator""_tr;
 
 void registerCommand();
 
-// #define C_RESET  "\033[0m"
-// #define C_BLACK  "\033[30m" /* Black */
-// #define C_RED    "\033[31m" /* Red */
-// #define C_GREEN  "\033[32m" /* Green */
-// #define C_YELLOW "\033[33m" /* Yellow */
-// #define C_BLUE   "\033[34m" /* Blue */
-// #define C_PURPLE "\033[35m" /* Purple */
-// #define C_CYAN   "\033[36m" /* Cyan */
-// #define C_WHITE  "\033[37m" /* White */
-
 inline string CommandOriginTypeToString(CommandOriginType type) {
     switch (type) {
     case CommandOriginType::Player:
-        return "players";
+        return "Player";
     case CommandOriginType::CommandBlock:
-        return "command blocks";
+        return "CommandBlock";
     case CommandOriginType::MinecartCommandBlock:
-        return "minecart command blocks";
+        return "MinecartCommandBlock";
     case CommandOriginType::DevConsole:
-        return "the developer console";
+        return "DevConsole";
     case CommandOriginType::Test:
-        return "test origins";
+        return "Test";
     case CommandOriginType::AutomationPlayer:
-        return "automation players";
+        return "AutomationPlayer";
     case CommandOriginType::ClientAutomation:
-        return "client automation";
+        return "ClientAutomation";
     case CommandOriginType::DedicatedServer:
-        return "dedicated servers";
+        return "DedicatedServer";
     case CommandOriginType::Entity:
-        return "entities";
+        return "Entity";
     case CommandOriginType::Virtual:
-        return "virtual origins";
+        return "Virtual";
     case CommandOriginType::GameArgument:
-        return "game argument origins";
+        return "GameArgument";
     case CommandOriginType::EntityServer:
-        return "entity servers";
+        return "EntityServer";
     case CommandOriginType::Precompiled:
-        return "precompiled origins";
+        return "Precompiled";
     case CommandOriginType::GameDirectorEntityServer:
-        return "game director entity servers";
+        return "GameDirectorEntityServer";
     case CommandOriginType::Scripting:
-        return "scripting origins";
+        return "Scripting";
     case CommandOriginType::ExecuteContext:
-        return "execute contexts";
+        return "ExecuteContext";
     default:
         return "unknown";
     }
@@ -107,7 +97,7 @@ inline string CommandOriginTypeToString(CommandOriginType type) {
                 __allowedTypesStr << CommandOriginTypeToString(__allowedType);                                         \
                 __first = false;                                                                                       \
             }                                                                                                          \
-            __output.error("This command is available to '{}' only!"_tr(__allowedTypesStr.str()));                     \
+            __output.error("此命令仅限 '{0}' 使用!"_tr(__allowedTypesStr.str()));                                      \
             return;                                                                                                    \
         }                                                                                                              \
     }

@@ -43,7 +43,7 @@ void db::loadLevelDB() {
         const auto& dirLevelDB = mSelf.getPluginDir() / "LevelDB";
         mKVDB                  = std::make_unique<ll::data::KeyValueDB>(dirLevelDB);
     } catch (...) {
-        logger.fatal("Failed to load the permission group database"_tr());
+        logger.fatal("从LevelDB加载数据失败"_tr());
     }
 }
 std::unique_ptr<ll::data::KeyValueDB>& db::getDBInstance() { return mKVDB; }
@@ -67,7 +67,7 @@ bool db::initPluginData(string pluginName) {
         auto d = j.dump();
         return mKVDB->set(pluginName, d);
     } catch (...) {
-        logger.error("Failed to initialize plugin '{}' data"_tr(pluginName));
+        logger.error("初始化插件 '{0}' 权限数据失败"_tr(pluginName));
         return false;
     }
 }
@@ -78,7 +78,7 @@ bool db::setPluginData(string pluginName, const std::unordered_map<std::string, 
         auto str = hashMapToJson(data).dump();
         return mKVDB->set(pluginName, str);
     } catch (...) {
-        logger.fatal("Failed to write plugin '{}' permission data to the database"_tr(pluginName));
+        logger.fatal("保存插件 '{0}' 权限数据失败"_tr(pluginName));
         return false;
     }
 }
@@ -93,7 +93,7 @@ std::optional<std::unordered_map<std::string, group::Group>> db::getPluginData(s
         }
         return std::nullopt;
     } catch (...) {
-        logger.error("Failed to read plugin {} data from the database"_tr(pluginName));
+        logger.error("读取插件 '{0}' 权限数据失败"_tr(pluginName));
         return std::nullopt;
     }
 }
