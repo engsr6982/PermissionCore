@@ -7,6 +7,12 @@
 
 ## [Unreleased]
 
+## [0.10.0] - 2024-6-20
+
+### Changed
+
+- 适配 LeviLamina 0.13.0
+
 ## [0.9.0] - 2024-5-15
 
 ### Changed
