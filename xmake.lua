@@ -6,7 +6,7 @@ add_repositories("liteldev-repo https://github.com/LiteLDev/xmake-repo.git")
 -- add_requires("levilamina develop") to use develop version
 -- please note that you should add bdslibrary yourself if using dev version
 add_requires(
-    "levilamina 0.12.1"
+    "levilamina 0.13.0"
 )
 
 if not has_config("vs_runtime") then
@@ -25,7 +25,12 @@ target("PermissionCore") -- Change this to your plugin name.
         "/w44738",
         "/w45204"
     )
-    add_defines("NOMINMAX", "UNICODE", "PERMISSION_CORE_API_EXPORT")
+    add_defines(
+        "NOMINMAX",
+        "UNICODE",
+        "PERMISSION_CORE_API_EXPORT",
+        "_HAS_CXX23=1"
+    )
 
     if is_mode("debug") then
         add_defines("LL_I18N_COLLECT_STRINGS", "DEBUG")
