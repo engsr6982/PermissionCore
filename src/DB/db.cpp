@@ -40,7 +40,7 @@ void db::loadLevelDB() {
     auto& mSelf  = entry::entry::getInstance().getSelf();
     auto& logger = mSelf.getLogger();
     try {
-        const auto& dirLevelDB = mSelf.getPluginDir() / "LevelDB";
+        const auto& dirLevelDB = mSelf.getModDir() / "LevelDB";
         mKVDB                  = std::make_unique<ll::data::KeyValueDB>(dirLevelDB);
     } catch (...) {
         logger.fatal("Failed to load the permission group database"_tr());

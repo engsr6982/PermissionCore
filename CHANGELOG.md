@@ -7,6 +7,10 @@
 
 ## [Unreleased]
 
+### Changed
+
+- 适配 Levilamina 0.13.4
+
 ## [0.10.0] - 2024-6-20
 
 ### Changed

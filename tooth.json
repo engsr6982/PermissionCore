@@ -1,7 +1,7 @@
 {
     "format_version": 2,
     "tooth": "github.com/engsr6982/PermissionCore",
-    "version": "0.10.0",
+    "version": "0.10.1",
     "info": {
         "name": "PermissionCore",
         "description": "权限组前置",
@@ -13,9 +13,9 @@
             "library"
         ]
     },
-    "asset_url": "https://github.com/engsr6982/PermissionCore/releases/download/v0.10.0/PermissionCore-windows-x64.zip",
+    "asset_url": "https://github.com/engsr6982/PermissionCore/releases/download/v0.10.1/PermissionCore-windows-x64.zip",
     "prerequisites": {
-        "github.com/LiteLDev/LeviLamina": "0.13.x"
+        "github.com/LiteLDev/LeviLamina": "0.13.4"
     },
     "files": {
         "place": [

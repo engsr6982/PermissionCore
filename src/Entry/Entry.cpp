@@ -3,8 +3,8 @@
 #include <memory>
 
 #include "ll/api/i18n/I18n.h"
-#include "ll/api/plugin/NativePlugin.h"
-#include "ll/api/plugin/RegisterHelper.h"
+#include "ll/api/mod/NativeMod.h"
+#include "ll/api/mod/RegisterHelper.h"
 
 
 // my
@@ -48,4 +48,4 @@ bool entry::disable() {
 
 } // namespace pmc
 
-LL_REGISTER_PLUGIN(pmc::entry, pmc::instance);
+LL_REGISTER_MOD(pmc::entry, pmc::instance);
