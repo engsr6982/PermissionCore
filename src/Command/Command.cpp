@@ -33,7 +33,7 @@ struct AddOrDelPermToGroup {
     int               permValue;
 };
 
-enum CreatOrDelete : int { Creat = 1, Delete = 0 };
+enum CreatOrDelete : int { Create = 1, Delete = 0 };
 struct CreatOrDeleteGroup {
     CreatOrDelete c_or_d;
     string        pluginName;
