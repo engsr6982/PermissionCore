@@ -204,7 +204,7 @@ void registerCommand() {
             if (manager.hasRegisterPermissionCore(param.pluginName)) {
                 PermissionCore& core = *manager.getPermissionCore(param.pluginName);
                 switch (param.c_or_d) {
-                case CreatOrDelete::Creat: {
+                case CreatOrDelete::Create: {
                     bool status = core.createGroup(param.groupName);
                     output.success("Add group '{}' in plugin '{}' state '{}'"_tr(
                         param.groupName,
@@ -226,9 +226,9 @@ void registerCommand() {
             }
         });
 
-    // permc user <add|del> <pluginName> <groupName> <target Player> 添加、删除用户到组
+    // permc users <add|del> <pluginName> <groupName> <target Player> 添加、删除用户到组
     cmd.overload<AddOrDelUserWithTarget>()
-        .text("user")
+        .text("users")
         .required("add_del")
         .required("pluginName")
         .required("groupName")
